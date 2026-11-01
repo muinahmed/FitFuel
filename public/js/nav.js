@@ -1,20 +1,21 @@
 // Shared site header for every logged-in page (Accounts – Muin): logo, navigation links,
 // log out button, and a Menu button that shows and hides the links on small screens.
+// Student pages also get a bottom tab bar on phones with the five main sections.
 // Student pages: put <header id="site-header"></header> on the page.
 // Admin pages: the same, plus <body data-area="admin"> to get the admin links.
-// Load this script after api.js.
+// Load this script after icons.js and api.js.
 
 const HEADER_AREAS = {
   student: {
     home: '/home.html',
     navLabel: 'Main',
     links: [
-      { href: '/home.html', label: 'Home' },
-      { href: '/mealplan.html', label: 'Meals', alsoActiveOn: ['/recipes.html', '/favourites.html'] },
-      { href: '/shopping.html', label: 'Shopping' },
-      { href: '/workouts.html', label: 'Workouts' },
-      { href: '/progress.html', label: 'Progress' },
-      { href: '/profile.html', label: 'Profile' },
+      { href: '/home.html', label: 'Home', icon: 'home' },
+      { href: '/mealplan.html', label: 'Meals', icon: 'meals', alsoActiveOn: ['/recipes.html', '/favourites.html'] },
+      { href: '/shopping.html', label: 'Shopping', icon: 'cart' },
+      { href: '/workouts.html', label: 'Workouts', icon: 'dumbbell' },
+      { href: '/progress.html', label: 'Progress', icon: 'chart' },
+      { href: '/profile.html', label: 'Profile', icon: 'user', notInTabBar: true },
     ],
     logoutPath: '/auth/logout',
     afterLogout: '/index.html',
@@ -24,15 +25,33 @@ const HEADER_AREAS = {
     tag: 'Admin',
     navLabel: 'Admin',
     links: [
-      { href: '/admin/dashboard.html', label: 'Dashboard' },
-      { href: '/admin/users.html', label: 'Users' },
-      { href: '/admin/recipes.html', label: 'Recipes' },
-      { href: '/admin/workouts.html', label: 'Workouts' },
+      { href: '/admin/dashboard.html', label: 'Dashboard', icon: 'home' },
+      { href: '/admin/users.html', label: 'Users', icon: 'users' },
+      { href: '/admin/recipes.html', label: 'Recipes', icon: 'book' },
+      { href: '/admin/workouts.html', label: 'Workouts', icon: 'dumbbell' },
     ],
     logoutPath: '/admin/auth/logout',
     afterLogout: '/admin/login.html',
   },
 };
+
+function isActiveLink(link) {
+  const path = window.location.pathname;
+  return path === link.href || (link.alsoActiveOn || []).includes(path);
+}
+
+// Phone-only bar at the bottom of student pages
+function renderTabBar(area) {
+  const tabBar = document.createElement('nav');
+  tabBar.className = 'tab-bar';
+  tabBar.setAttribute('aria-label', 'Sections');
+  tabBar.innerHTML = area.links.filter((link) => !link.notInTabBar).map((link) => `
+    <a href="${link.href}"${isActiveLink(link) ? ' aria-current="page"' : ''}>
+      ${icon(link.icon, 22)}<span>${link.label}</span>
+    </a>`).join('');
+  document.body.appendChild(tabBar);
+  document.body.classList.add('has-tab-bar');
+}
 
 function renderHeader() {
   const areaName = document.body.dataset.area === 'admin' ? 'admin' : 'student';
@@ -40,17 +59,14 @@ function renderHeader() {
   const header = document.getElementById('site-header');
   header.className = `site-header site-header--${areaName}`;
 
-  const path = window.location.pathname;
-  const links = area.links.map((link) => {
-    const isActive = path === link.href || (link.alsoActiveOn || []).includes(path);
-    return `<li><a href="${link.href}"${isActive ? ' aria-current="page"' : ''}>${link.label}</a></li>`;
-  }).join('');
+  const links = area.links.map((link) => `
+    <li><a href="${link.href}"${isActiveLink(link) ? ' aria-current="page"' : ''}>${icon(link.icon, 18)}${link.label}</a></li>`).join('');
 
   header.innerHTML = `
     <div class="site-header__inner">
       <a class="brand" href="${area.home}">
         <img src="/img/logo.png" alt="" width="44" height="44">
-        FitFuel${area.tag ? ` <span class="brand__tag">${area.tag}</span>` : ''}
+        <span>FitFuel</span>${area.tag ? `<span class="brand__tag">${area.tag}</span>` : ''}
       </a>
       <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav">
         <span class="nav-toggle__bars" aria-hidden="true"></span>Menu
@@ -58,7 +74,7 @@ function renderHeader() {
       <nav class="nav" id="site-nav" aria-label="${area.navLabel}">
         <ul>
           ${links}
-          <li><button type="button" id="logout-button">Log out</button></li>
+          <li><button type="button" id="logout-button">${icon('logout', 18)}Log out</button></li>
         </ul>
       </nav>
     </div>`;
@@ -85,6 +101,8 @@ function renderHeader() {
       window.location.href = area.afterLogout;
     }
   });
+
+  if (areaName === 'student') renderTabBar(area);
 }
 
 renderHeader();

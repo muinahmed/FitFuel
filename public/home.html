@@ -10,40 +10,65 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="site-header"></header>
   <main id="main" class="container">
-    <h1 id="greeting">Welcome to FitFuel</h1>
+    <div class="dashboard__head">
+      <p class="muted" id="today-label"></p>
+      <h1 id="greeting">Welcome to FitFuel</h1>
+    </div>
+
     <div id="reminder-banner" class="reminder-banner" role="status" hidden>
-      <span class="reminder-banner__icon" aria-hidden="true">🗓️</span>
-      <p><strong>Time to plan next week's meals!</strong></p>
+      <span class="icon-chip icon-chip--sun" data-icon="calendar"></span>
+      <p>Time to plan next week's meals!</p>
       <a class="btn" href="/mealplan.html?week=next">Plan next week</a>
     </div>
     <div id="page-message" class="message" role="status"></div>
 
-    <div class="grid grid--3">
-      <section class="card" aria-labelledby="budget-heading">
+    <section class="hero-card" aria-labelledby="budget-heading">
+      <div class="hero-card__text">
         <h2 id="budget-heading">Weekly budget</h2>
-        <p class="budget-figure" id="budget-figure">–</p>
-        <div id="budget-plan"><p class="muted">Loading…</p></div>
-      </section>
+        <p class="hero-card__figure" id="budget-figure">–</p>
+        <div id="budget-plan"><p>Loading…</p></div>
+      </div>
+      <div id="budget-ring"></div>
+    </section>
+
+    <div class="dashboard__grid">
       <section class="card" aria-labelledby="meals-heading">
-        <h2 id="meals-heading">Today's meals</h2>
+        <div class="card__heading">
+          <h2 id="meals-heading">Today's meals</h2>
+          <span class="icon-chip" data-icon="meals"></span>
+        </div>
         <div id="todays-meals"><p class="muted">Loading…</p></div>
       </section>
+
       <section class="card" aria-labelledby="workout-heading">
-        <h2 id="workout-heading">Next workout</h2>
+        <div class="card__heading">
+          <h2 id="workout-heading">Next workout</h2>
+          <span class="icon-chip" data-icon="dumbbell"></span>
+        </div>
         <div id="next-workout"><p class="muted">Loading…</p></div>
+      </section>
+
+      <section class="card" aria-labelledby="week-heading">
+        <div class="card__heading">
+          <h2 id="week-heading">Your progress</h2>
+          <span class="icon-chip" data-icon="chart"></span>
+        </div>
+        <div id="week-stats" class="stat-list"><p class="muted">Loading…</p></div>
       </section>
     </div>
 
-    <h2 class="section-heading">Quick links</h2>
-    <nav class="quick-links" aria-label="Quick links">
-      <a class="quick-link" href="/mealplan.html"><span aria-hidden="true">🥗</span>Meal plan</a>
-      <a class="quick-link" href="/shopping.html"><span aria-hidden="true">🛒</span>Shopping list</a>
-      <a class="quick-link" href="/workouts.html"><span aria-hidden="true">💪</span>Workouts</a>
-      <a class="quick-link" href="/progress.html"><span aria-hidden="true">📈</span>Progress</a>
+    <h2 class="section-heading">Shortcuts</h2>
+    <nav class="quick-links" aria-label="Shortcuts">
+      <a class="quick-link" href="/recipes.html"><span class="icon-chip" data-icon="book"></span>Browse recipes</a>
+      <a class="quick-link" href="/favourites.html"><span class="icon-chip" data-icon="heart"></span>Favourites</a>
+      <a class="quick-link" href="/progress.html"><span class="icon-chip" data-icon="scale"></span>Log your weight</a>
+      <a class="quick-link" href="/profile.html"><span class="icon-chip" data-icon="user"></span>Your profile</a>
     </nav>
   </main>
+  <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
+  <script src="/js/recipeDetail.js"></script>
   <script src="/js/home.js"></script>
 </body>
 </html>

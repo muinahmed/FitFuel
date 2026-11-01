@@ -15,22 +15,23 @@
 
     <div class="grid grid--3">
       <section class="card admin-card" aria-labelledby="users-heading">
-        <h2 id="users-heading">Users</h2>
+        <div class="admin-card__head"><span class="icon-chip" data-icon="users"></span><h2 id="users-heading">Users</h2></div>
         <div class="stat-row" id="user-stats"><p class="muted">Loading…</p></div>
         <a class="btn" href="/admin/users.html">Manage users</a>
       </section>
       <section class="card admin-card" aria-labelledby="recipes-heading">
-        <h2 id="recipes-heading">Recipes</h2>
+        <div class="admin-card__head"><span class="icon-chip" data-icon="book"></span><h2 id="recipes-heading">Recipes</h2></div>
         <div id="recipe-stats"><p class="muted">Loading…</p></div>
         <a class="btn" href="/admin/recipes.html">Manage recipes</a>
       </section>
       <section class="card admin-card" aria-labelledby="workouts-heading">
-        <h2 id="workouts-heading">Workouts</h2>
+        <div class="admin-card__head"><span class="icon-chip" data-icon="dumbbell"></span><h2 id="workouts-heading">Workouts</h2></div>
         <div id="workout-stats"><p class="muted">Loading…</p></div>
         <a class="btn" href="/admin/workouts.html">Manage workouts</a>
       </section>
     </div>
   </main>
+  <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/admin/dashboard.js"></script>

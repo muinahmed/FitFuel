@@ -61,7 +61,7 @@ async function loadRecipes() {
 async function loadUsage() {
   const usage = await api('/admin/recipes/usage');
   document.getElementById('usage-list').innerHTML = usage.map((row) => `
-    <li><span>${escapeHtml(row.recipeName)} <span class="muted capitalise">· ${escapeHtml(row.mealType)}</span></span>
+    <li><span>${escapeHtml(row.recipeName)} <span class="muted">(${escapeHtml(row.mealType)})</span></span>
         <strong>${row.timesPlanned}×</strong></li>`).join('');
 }
 

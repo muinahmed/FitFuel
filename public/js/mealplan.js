@@ -12,16 +12,21 @@ let selectedWeek = weekFromAddress();
 let currentPlan = null;
 
 function mealHtml(label, meal, dayName) {
-  if (!meal) return `<div class="plan-meal"><span class="plan-meal__slot">${label}</span><span class="placeholder">Nothing planned</span></div>`;
+  if (!meal) {
+    return `<div class="plan-meal"><div class="plan-meal__text"><span class="plan-meal__slot">${label}</span>
+      <span class="placeholder">Nothing planned</span></div></div>`;
+  }
+  const recipe = { ...meal, mealType: label.toLowerCase() };
   return `
     <div class="plan-meal">
-      <span class="plan-meal__slot">${label}</span>
-      <button type="button" class="link-button" data-recipe-id="${meal.recipeId}">${escapeHtml(meal.recipeName)}</button>
-      <span class="plan-meal__footer">
-        <span class="muted">${formatKr(meal.pricePerPortion)} · ${meal.calories} kcal</span>
-        <button type="button" class="swap-button" data-swap-entry="${meal.entryId}"
-                aria-label="Swap ${dayName} ${label.toLowerCase()}: ${escapeHtml(meal.recipeName)}">⇄ Swap</button>
-      </span>
+      ${foodTileHtml(recipe)}
+      <div class="plan-meal__text">
+        <span class="plan-meal__slot">${label}</span>
+        <button type="button" class="link-button" data-recipe-id="${meal.recipeId}">${escapeHtml(meal.recipeName)}</button>
+        ${recipeMetaHtml(recipe)}
+      </div>
+      <button type="button" class="swap-button" data-swap-entry="${meal.entryId}"
+              aria-label="Swap ${dayName} ${label.toLowerCase()}: ${escapeHtml(meal.recipeName)}">${icon('swap', 18)}</button>
     </div>`;
 }
 
@@ -30,7 +35,9 @@ function dayHtml(day) {
   const dayName = formatDate(day.date);
   return `
     <section class="card plan-day${isToday ? ' plan-day--today' : ''}" aria-label="${dayName}">
-      <h2>${dayName}${isToday ? ' <span class="badge badge--today">Today</span>' : ''}</h2>
+      <h2>${formatDate(day.date, { weekday: 'long' })}
+        <span class="muted">${formatDate(day.date, { day: 'numeric', month: 'short' })}</span>
+        ${isToday ? '<span class="badge badge--today">Today</span>' : ''}</h2>
       ${mealHtml('Lunch', day.lunch, dayName)}
       ${mealHtml('Dinner', day.dinner, dayName)}
     </section>`;

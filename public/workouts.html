@@ -15,13 +15,17 @@
         <h1>Workouts</h1>
         <p class="muted" id="goal-label"></p>
       </div>
-      <a class="btn btn--secondary" href="/progress.html">See your progress</a>
+      <a class="btn btn--secondary" href="/progress.html"><span data-icon="chart"></span>See your progress</a>
     </div>
 
     <div id="page-message" class="message" role="status"></div>
 
-    <section class="card training-days" aria-labelledby="days-heading">
-      <h2 id="days-heading">Your training week</h2>
+    <section class="card week-progress" aria-labelledby="days-heading">
+      <div class="week-progress__status">
+        <h2 id="days-heading">Your training week</h2>
+        <p class="muted" id="week-status">Loading your plan…</p>
+        <div class="progress-bar" id="week-bar" aria-hidden="true" hidden><div class="progress-bar__fill" id="week-fill"></div></div>
+      </div>
       <form id="days-form" class="inline-form">
         <div class="form-field">
           <label for="trainingDays">Training days per week</label>
@@ -45,6 +49,7 @@
       <ul id="history" class="history-list"></ul>
     </section>
   </main>
+  <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/workouts.js"></script>

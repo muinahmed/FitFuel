@@ -9,39 +9,69 @@
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <main id="main" class="container">
-    <section class="hero">
-      <img class="hero__logo" src="/img/logo.png" alt="FitFuel logo" width="200" height="200">
-      <h1>FitFuel</h1>
-      <p class="tagline">Eat Healthy. Stay Active. Spend Wisely.</p>
-      <p class="lead">
-        FitFuel helps students eat well and train regularly on a small budget.
-        Set your goal and weekly food budget, get a meal plan with a shopping list,
-        follow simple workouts and watch your progress.
-      </p>
-      <div class="button-row">
-        <a class="btn" href="/signup.html">Sign up</a>
-        <a class="btn btn--secondary" href="/login.html">Log in</a>
+    <section class="landing">
+      <div>
+        <span class="landing__brand"><img src="/img/logo.png" alt="FitFuel logo" width="56" height="56">FitFuel</span>
+        <h1>Eat Healthy. Stay Active. Spend Wisely.</h1>
+        <p class="lead">
+          Plan a week of meals that fits your food budget, get the shopping list made for you,
+          and follow short workouts built around your goal.
+        </p>
+        <div class="button-row">
+          <a class="btn" href="/signup.html">Create a free account</a>
+          <a class="btn btn--secondary" href="/login.html">Log in</a>
+        </div>
+      </div>
+
+      <!-- A picture of the app, built from demo data (decorative, so hidden from screen readers) -->
+      <div class="preview" aria-hidden="true">
+        <div class="preview__card preview__card--hero">
+          <div class="ring" style="width:96px;height:96px">
+            <svg width="96" height="96" focusable="false">
+              <circle class="ring__track" cx="48" cy="48" r="43" fill="none" stroke-width="10"/>
+              <circle class="ring__value" cx="48" cy="48" r="43" fill="none" stroke-width="10" stroke-linecap="round"
+                      stroke-dasharray="270.2" stroke-dashoffset="37.8"/>
+            </svg>
+            <div class="ring__centre"><span class="ring__number" style="font-size:1.2rem">86%</span></div>
+          </div>
+          <div>
+            <p class="preview__title">43.00 kr left</p>
+            <p>of a 300 kr food budget this week</p>
+          </div>
+        </div>
+        <div class="preview__card">
+          <div class="preview__row">
+            <span class="food-tile food-tile--lunch">🍲</span>
+            <div><p>Red Lentil Soup</p><span class="muted">Lunch, 11.00 kr</span></div>
+          </div>
+          <div class="preview__row">
+            <span class="food-tile food-tile--dinner">🍛</span>
+            <div><p>Sweet Potato Chickpea Curry</p><span class="muted">Dinner, 23.00 kr</span></div>
+          </div>
+        </div>
+        <div class="preview__card preview__row">
+          <span class="icon-chip" data-icon="dumbbell"></span>
+          <div><p>Beginner Fat-Burn Circuit</p><span class="muted">Monday, 20 minutes</span></div>
+        </div>
       </div>
     </section>
 
-    <section class="grid grid--3" aria-label="What FitFuel does">
-      <div class="card">
-        <span class="feature-icon" aria-hidden="true">🥗</span>
-        <h2>Meals on a budget</h2>
-        <p>A weekly meal plan that fits your diet and your budget, with an automatic shopping list.</p>
+    <section class="features" aria-label="What FitFuel does">
+      <div class="card feature">
+        <span class="icon-chip" data-icon="wallet"></span>
+        <div><h2>Meals on a budget</h2><p>A weekly plan that fits your diet and budget, with the shopping list made for you.</p></div>
       </div>
-      <div class="card">
-        <span class="feature-icon" aria-hidden="true">💪</span>
-        <h2>Simple workouts</h2>
-        <p>Short workout plans for your goal, with clear instructions for every exercise.</p>
+      <div class="card feature">
+        <span class="icon-chip" data-icon="dumbbell"></span>
+        <div><h2>Simple workouts</h2><p>Short plans for your goal, with clear instructions for every exercise.</p></div>
       </div>
-      <div class="card">
-        <span class="feature-icon" aria-hidden="true">📈</span>
-        <h2>Track progress</h2>
-        <p>Log your workouts and weight and see how far you have come.</p>
+      <div class="card feature">
+        <span class="icon-chip" data-icon="chart"></span>
+        <div><h2>Track progress</h2><p>Log workouts and your weight, and watch the charts move.</p></div>
       </div>
     </section>
   </main>
-  <footer class="site-footer">FitFuel · The Agile Trio</footer>
+  <footer class="site-footer">FitFuel, made by The Agile Trio</footer>
+  <script src="/js/icons.js"></script>
 </body>
 </html>

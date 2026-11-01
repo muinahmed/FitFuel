@@ -7,9 +7,38 @@ const progressMessage = document.getElementById('page-message');
 const logMessage = document.getElementById('log-message');
 const entriesMessage = document.getElementById('entries-message');
 let weights = [];
+let weeks = [];
 
 const formatKg = (kg) => `${Number(kg).toFixed(1)} kg`;
 const shortDate = (date) => formatDate(date, { day: 'numeric', month: 'short', year: 'numeric' });
+
+function statTileHtml(iconName, value, label) {
+  return `
+    <div class="card stat-tile">
+      <span class="icon-chip">${icon(iconName, 22)}</span>
+      <div><p class="stat-line__value">${value}</p><p class="stat-line__label">${label}</p></div>
+    </div>`;
+}
+
+// Summary tiles at the top: latest weight, change, workouts this week and in 8 weeks
+function renderStats() {
+  const tiles = [];
+  if (weights.length) {
+    const first = weights[0];
+    const latest = weights[weights.length - 1];
+    tiles.push(statTileHtml('scale', formatKg(latest.weightKg), 'latest weight'));
+    if (weights.length > 1) {
+      const change = Math.round((latest.weightKg - first.weightKg) * 10) / 10;
+      tiles.push(statTileHtml('chart', change === 0 ? 'No change' : `${change > 0 ? '+' : '−'}${formatKg(Math.abs(change))}`,
+        `since ${formatDate(first.logDate, { day: 'numeric', month: 'short' })}`));
+    }
+  }
+  if (weeks.length) {
+    tiles.push(statTileHtml('trophy', String(weeks[weeks.length - 1].count), 'workouts this week'));
+    tiles.push(statTileHtml('calendar', String(weeks.reduce((sum, week) => sum + week.count, 0)), 'workouts in 8 weeks'));
+  }
+  document.getElementById('progress-stats').innerHTML = tiles.join('');
+}
 
 function renderWeightChart() {
   const summary = document.getElementById('weight-summary');
@@ -68,10 +97,12 @@ async function loadWeights() {
   weights = await api('/progress/weights');
   renderWeightTable();
   renderWeightChart();
+  renderStats();
 }
 
 async function loadWorkoutChart() {
-  const weeks = await api('/progress/workouts-per-week');
+  weeks = await api('/progress/workouts-per-week');
+  renderStats();
   const label = (week) => formatDate(week.weekStart, { day: 'numeric', month: 'short' });
   const total = weeks.reduce((sum, week) => sum + week.count, 0);
   const summary = `${total} workout${total === 1 ? '' : 's'} in the last ${weeks.length} weeks, ${weeks[weeks.length - 1].count} this week.`;

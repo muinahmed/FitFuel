@@ -64,6 +64,26 @@ function budgetMeterHtml(spent, budget) {
     </div>`;
 }
 
+// Circular progress ring (SVG). fraction 0–1; centreHtml goes in the middle.
+// The ring scales to its box, so CSS sets the size (.ring). Options: over (true = warning colour),
+// light (for white cards instead of the dark hero).
+function progressRingHtml(fraction, centreHtml, { over = false, light = false } = {}) {
+  const size = 132;
+  const stroke = 12;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const shown = Math.max(0, Math.min(1, fraction));
+  return `
+    <div class="ring${over ? ' ring--over' : ''}${light ? ' ring--light' : ''}">
+      <svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" aria-hidden="true" focusable="false">
+        <circle class="ring__track" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"/>
+        <circle class="ring__value" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"
+                stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - shown)}"/>
+      </svg>
+      <div class="ring__centre">${centreHtml}</div>
+    </div>`;
+}
+
 // Make text safe to put inside innerHTML
 function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (character) => (

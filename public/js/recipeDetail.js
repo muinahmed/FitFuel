@@ -1,11 +1,42 @@
 // Recipes & Meal Planning component – Albina Rana
-// Shared recipe pieces: diet badges, recipe cards with a favourite (heart) button, and the
-// recipe detail dialog (ingredients and steps). Used on the recipes, favourites, meal plan and
-// recipes admin pages. Load after api.js.
+// Shared recipe pieces: food tiles, diet badges, recipe cards with a favourite (heart) button,
+// and the recipe detail dialog (ingredients and steps). Used on the home, recipes, favourites,
+// meal plan and recipes admin pages. Load after icons.js and api.js.
 
 let recipeDialog = null;
 
-// Badges for a recipe's diets, e.g. Vegetarian · Vegan · Halal
+// Recipes have no photos, so each gets a food emoji picked from words in its name.
+// The first matching rule wins, so specific dishes come before single ingredients.
+const FOOD_EMOJI = [
+  [/salmon|tuna|fish/i, '🐟'], [/curry/i, '🍛'], [/chilli|chili/i, '🌶️'], [/spaghetti|pasta|bolognese/i, '🍝'],
+  [/soup|stew|casserole/i, '🍲'], [/wrap|kofta|flatbread/i, '🌯'], [/quesadilla|taco/i, '🌮'],
+  [/fried rice/i, '🍚'], [/chicken/i, '🍗'], [/omelette|scrambled|\beggs?\b/i, '🍳'], [/oat|yogurt|granola/i, '🥣'],
+  [/toast|bread/i, '🍞'], [/salad|couscous/i, '🥗'], [/stir-fry|noodle|tofu/i, '🥢'], [/risotto|mushroom/i, '🍄'],
+  [/rice/i, '🍚'], [/sausage/i, '🌭'], [/banana/i, '🍌'], [/apple/i, '🍏'], [/hummus|veg/i, '🥕'],
+];
+const MEAL_TYPE_EMOJI = { breakfast: '🥣', lunch: '🥗', dinner: '🍲', snack: '🍎' };
+
+function recipeEmoji(recipe) {
+  const match = FOOD_EMOJI.find(([pattern]) => pattern.test(recipe.recipeName));
+  return match ? match[1] : MEAL_TYPE_EMOJI[recipe.mealType] || '🍽️';
+}
+
+// Emoji tile tinted by meal type. size: '' (small) or 'large' (card / dialog header)
+function foodTileHtml(recipe, size = '') {
+  const mealType = recipe.mealType || 'dinner';
+  return `<span class="food-tile food-tile--${mealType}${size ? ` food-tile--${size}` : ''}" aria-hidden="true">${recipeEmoji(recipe)}</span>`;
+}
+
+// Price and calories as icon + value pairs
+function recipeMetaHtml(recipe) {
+  return `
+    <p class="meta">
+      <span class="meta__item">${icon('wallet', 16)}<span class="visually-hidden">Price </span>${formatKr(recipe.pricePerPortion)}</span>
+      <span class="meta__item">${icon('flame', 16)}${recipe.calories} kcal</span>
+    </p>`;
+}
+
+// Badges for a recipe's diets (Vegetarian, Vegan, Halal)
 function dietBadgesHtml(recipe) {
   const labels = [];
   if (recipe.isVegetarian) labels.push('Vegetarian');
@@ -41,12 +72,15 @@ function recipeDetailHtml(recipe) {
   const steps = recipe.steps.map((step) => `<li>${escapeHtml(step.instruction)}</li>`).join('');
 
   return `
+    ${foodTileHtml(recipe, 'large')}
     <h2 id="recipe-dialog-title">${escapeHtml(recipe.recipeName)}</h2>
-    <p class="recipe-meta">
-      <span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}
-    </p>
-    <p><strong>${formatKr(recipe.pricePerPortion)}</strong> per portion · ${recipe.calories} kcal</p>
-    <h3>Ingredients <span class="muted">(1 portion)</span></h3>
+    <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
+    <div class="fact-tiles">
+      <div class="fact-tile"><strong>${formatKr(recipe.pricePerPortion)}</strong><span>per portion</span></div>
+      <div class="fact-tile"><strong>${recipe.calories}</strong><span>kcal</span></div>
+      <div class="fact-tile"><strong>${recipe.ingredients.length}</strong><span>ingredients</span></div>
+    </div>
+    <h3>Ingredients for one portion</h3>
     <ul class="ingredient-list">${ingredients}</ul>
     <h3>Steps</h3>
     <ol class="step-list">${steps}</ol>`;
@@ -66,21 +100,22 @@ async function openRecipeDetail(recipeId) {
   }
 }
 
-// A recipe card with a heart button (FF-25) and a "View recipe" button
+// A recipe card: food tile with a heart button (FF-25), badges, price, calories and "View recipe"
 function recipeCardHtml(recipe) {
   const name = escapeHtml(recipe.recipeName);
   return `
     <article class="card recipe-card">
       <div class="recipe-card__top">
-        <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
+        ${foodTileHtml(recipe, 'large')}
         <button type="button" class="heart-button" data-favourite="${recipe.recipeId}"
-                aria-pressed="${Boolean(recipe.isFavourite)}" aria-label="Favourite: ${name}">
-          <span aria-hidden="true">♥</span>
-        </button>
+                aria-pressed="${Boolean(recipe.isFavourite)}" aria-label="Favourite: ${name}">${icon('heart', 20)}</button>
       </div>
-      <h2>${name}</h2>
-      <p class="recipe-card__facts"><strong>${formatKr(recipe.pricePerPortion)}</strong> per portion · ${recipe.calories} kcal</p>
-      <button type="button" class="btn btn--secondary" data-recipe-id="${recipe.recipeId}">View recipe</button>
+      <div class="recipe-card__body">
+        <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
+        <h2>${name}</h2>
+        ${recipeMetaHtml(recipe)}
+        <button type="button" class="btn btn--secondary" data-recipe-id="${recipe.recipeId}">View recipe</button>
+      </div>
     </article>`;
 }
 

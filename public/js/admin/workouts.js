@@ -43,7 +43,7 @@ async function loadWorkouts() {
 async function loadActivity() {
   const activity = await api('/admin/workouts/activity');
   document.getElementById('activity-list').innerHTML = activity.map((row) => `
-    <li><span>${escapeHtml(row.workoutName)} <span class="muted capitalise">· ${escapeHtml(row.goal)}</span></span>
+    <li><span>${escapeHtml(row.workoutName)} <span class="muted">(${escapeHtml(row.goal)})</span></span>
         <strong>${row.timesLogged}×</strong></li>`).join('');
 }
 

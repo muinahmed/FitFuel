@@ -18,6 +18,8 @@ function updateProgress() {
   const boxes = shoppingList.querySelectorAll('input[type="checkbox"]');
   const ticked = shoppingList.querySelectorAll('input[type="checkbox"]:checked');
   progressText.textContent = `${ticked.length} of ${boxes.length} items ticked off`;
+  document.getElementById('progress-bar').hidden = boxes.length === 0;
+  document.getElementById('progress-fill').style.width = boxes.length ? `${(ticked.length / boxes.length) * 100}%` : '0%';
 }
 
 function itemHtml(item, index) {
@@ -41,6 +43,7 @@ async function loadShoppingList() {
     document.getElementById('week-label').textContent = `Week of ${formatDate(list.weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`;
     document.getElementById('plan-link').href = `/mealplan.html${weekQuery(list.week)}`;
     shoppingList.innerHTML = '';
+    document.getElementById('progress-bar').hidden = true;
     const totalCost = document.getElementById('total-cost');
     totalCost.hidden = list.items.length === 0;
     totalCost.innerHTML = `Estimated cost: <strong>${formatKr(list.totalCost)}</strong>`;

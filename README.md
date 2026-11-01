@@ -24,6 +24,17 @@ Shared: `server.js`, `db/`, `utils/`, `public/css/style.css`, `public/js/api.js`
 - Auth: `express-session` (httpOnly cookie) + `bcrypt` (cost 10)
 - Tests: `node:test` + `supertest`
 
+## Design
+
+All styling is in `public/css/style.css`, built on the tokens at the top of the file.
+
+- **Colours (from the logo):** forest `#0B5D2E` for primary buttons, the active tab and the Home hero; leaf `#1E8B3A` for charts and progress; lime `#7CC242` for rings and active highlights; page background `#F0F5EE`; text `#1F2A24`; warning `#E8A33D` only for over-budget states; error `#C0392B`.
+- **Type:** system fonts only (works offline). Headings use the system's rounded/display face at heavy weight; numbers use tabular digits so amounts line up.
+- **Shape:** a radius hierarchy instead of one radius everywhere – hero 28px, cards 20px, chips and inputs 12–14px, buttons pill-shaped.
+- **Icons:** hand-drawn line icons in `public/js/icons.js` – `icon('flame')` in scripts or `<span data-icon="flame"></span>` in HTML. Price, calories and minutes are shown as icon + value instead of "A · B" text.
+- **Recipe pictures:** recipes have no photos, so each gets a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`).
+- **Phones:** a bottom tab bar for the five main sections on student pages, and a Menu button for everything (including Profile and Log out). Admin pages have a dark header so admins always know where they are.
+
 ## Install, run, seed and test
 
 Requires Node.js 22 or newer.
