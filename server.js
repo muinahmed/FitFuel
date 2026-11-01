@@ -66,6 +66,11 @@ app.use(ADMIN_PAGES, requireAdminPage);
 app.get(['/admin', '/admin/'], (req, res) => res.redirect('/admin/dashboard.html'));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Any other address: a friendly "page not found" page
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
 // ---------- Errors ----------
 app.use((error, req, res, next) => {
   if (error.type === 'entity.parse.failed') {

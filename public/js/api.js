@@ -44,6 +44,26 @@ function formatKr(amount) {
   return `${Number(amount).toFixed(2)} kr`;
 }
 
+// Bar of planned cost against the weekly budget (FF-22). Over budget it turns the warning colour
+// and says by how much, so the state never depends on colour alone.
+function budgetMeterHtml(spent, budget) {
+  const over = spent > budget;
+  const percent = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 100;
+  const status = over ? `⚠ ${formatKr(spent - budget)} over budget` : `${formatKr(budget - spent)} left`;
+  return `
+    <div class="budget-meter${over ? ' budget-meter--over' : ''}">
+      <div class="budget-meter__labels">
+        <span><strong>${formatKr(spent)}</strong> of ${formatKr(budget)}</span>
+        <span class="budget-meter__status">${status}</span>
+      </div>
+      <div class="budget-meter__track" role="meter" aria-label="Planned spending"
+           aria-valuemin="0" aria-valuemax="${Math.max(budget, spent)}" aria-valuenow="${spent}"
+           aria-valuetext="${formatKr(spent)} of ${formatKr(budget)}, ${status.replace('⚠ ', '')}">
+        <div class="budget-meter__fill" style="width: ${percent}%"></div>
+      </div>
+    </div>`;
+}
+
 // Make text safe to put inside innerHTML
 function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, (character) => (

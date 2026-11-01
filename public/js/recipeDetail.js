@@ -1,6 +1,7 @@
 // Recipes & Meal Planning component – Albina Rana
-// Shared recipe pieces: diet badges and the recipe detail dialog (ingredients and steps).
-// Used on the recipes and meal plan pages. Load after api.js.
+// Shared recipe pieces: diet badges, recipe cards with a favourite (heart) button, and the
+// recipe detail dialog (ingredients and steps). Used on the recipes, favourites, meal plan and
+// recipes admin pages. Load after api.js.
 
 let recipeDialog = null;
 
@@ -63,4 +64,42 @@ async function openRecipeDetail(recipeId) {
   } catch (error) {
     body.innerHTML = `<h2 id="recipe-dialog-title">Recipe</h2><p class="message message--error">${escapeHtml(error.message)}</p>`;
   }
+}
+
+// A recipe card with a heart button (FF-25) and a "View recipe" button
+function recipeCardHtml(recipe) {
+  const name = escapeHtml(recipe.recipeName);
+  return `
+    <article class="card recipe-card">
+      <div class="recipe-card__top">
+        <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
+        <button type="button" class="heart-button" data-favourite="${recipe.recipeId}"
+                aria-pressed="${Boolean(recipe.isFavourite)}" aria-label="Favourite: ${name}">
+          <span aria-hidden="true">♥</span>
+        </button>
+      </div>
+      <h2>${name}</h2>
+      <p class="recipe-card__facts"><strong>${formatKr(recipe.pricePerPortion)}</strong> per portion · ${recipe.calories} kcal</p>
+      <button type="button" class="btn btn--secondary" data-recipe-id="${recipe.recipeId}">View recipe</button>
+    </article>`;
+}
+
+// Heart buttons inside container save or remove a favourite when clicked.
+// onChange(recipeId, isFavourite) runs after a successful save; errors are shown in messageElement.
+function setUpFavouriteButtons(container, messageElement, onChange) {
+  container.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-favourite]');
+    if (!button) return;
+    const makeFavourite = button.getAttribute('aria-pressed') !== 'true';
+    button.disabled = true;
+    try {
+      await api(`/recipes/${button.dataset.favourite}/favourite`, { method: makeFavourite ? 'PUT' : 'DELETE' });
+      button.setAttribute('aria-pressed', String(makeFavourite));
+      if (onChange) onChange(Number(button.dataset.favourite), makeFavourite);
+    } catch (error) {
+      showMessage(messageElement, error.message);
+    } finally {
+      button.disabled = false;
+    }
+  });
 }

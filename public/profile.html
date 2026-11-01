@@ -57,6 +57,28 @@
         </form>
       </section>
 
+      <section class="card" aria-labelledby="reminder-heading">
+        <h2 id="reminder-heading">Weekly reminder</h2>
+        <div id="reminder-message" class="message" role="status"></div>
+        <form id="reminder-form">
+          <div class="form-field">
+            <label for="reminderDay">Remind me to plan next week's meals on</label>
+            <select id="reminderDay" name="reminderDay" aria-describedby="reminder-hint">
+              <option value="">No reminder</option>
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+              <option>Saturday</option>
+              <option>Sunday</option>
+            </select>
+            <p id="reminder-hint" class="hint">On that day your home page shows a reminder.</p>
+          </div>
+          <button type="submit" class="btn">Save reminder</button>
+        </form>
+      </section>
+
       <section class="card" aria-labelledby="details-heading">
         <h2 id="details-heading">Account details</h2>
         <div id="details-message" class="message" role="status"></div>

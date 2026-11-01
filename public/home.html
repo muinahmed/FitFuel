@@ -11,13 +11,18 @@
   <header id="site-header"></header>
   <main id="main" class="container">
     <h1 id="greeting">Welcome to FitFuel</h1>
+    <div id="reminder-banner" class="reminder-banner" role="status" hidden>
+      <span class="reminder-banner__icon" aria-hidden="true">🗓️</span>
+      <p><strong>Time to plan next week's meals!</strong></p>
+      <a class="btn" href="/mealplan.html?week=next">Plan next week</a>
+    </div>
     <div id="page-message" class="message" role="status"></div>
 
     <div class="grid grid--3">
       <section class="card" aria-labelledby="budget-heading">
-        <h2 id="budget-heading">This week's budget</h2>
+        <h2 id="budget-heading">Weekly budget</h2>
         <p class="budget-figure" id="budget-figure">–</p>
-        <p class="muted" id="budget-note"></p>
+        <div id="budget-plan"><p class="muted">Loading…</p></div>
       </section>
       <section class="card" aria-labelledby="meals-heading">
         <h2 id="meals-heading">Today's meals</h2>

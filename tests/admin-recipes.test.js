@@ -3,6 +3,7 @@
 const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const { db, signedUpAgent, adminAgent } = require('./helpers');
+const { weekStart, addDays } = require('../utils/dates');
 
 // A valid recipe body; change parts with overrides
 function newRecipe(overrides = {}) {
@@ -92,21 +93,32 @@ describe('Recipes admin', () => {
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM RecipeIngredient WHERE RecipeID = ?').get(created.recipeId).n, 0);
   });
 
-  test('warns before deleting a recipe used in current meal plans', async () => {
+  test('warns with the number of meal plans using the recipe, then removes its MealPlanEntry rows', async () => {
     const admin = await adminAgent();
-    const { agent: student, student: details } = await signedUpAgent();
-    await student.put('/api/users/me/budget').send({ weeklyBudget: 500 }).expect(200);
-    const { body: plan } = await student.post('/api/mealplans/generate?week=this').expect(201);
-    const { recipeId } = plan.days[0].lunch;
-    const userId = db.prepare('SELECT UserID FROM Users WHERE Email = ?').get(details.email).UserID;
-    const uses = db.prepare('SELECT COUNT(*) AS n FROM MealPlanEntry WHERE RecipeID = ? AND UserID = ?').get(recipeId, userId).n;
+    const { body: recipe } = await admin.post('/api/admin/recipes').send(newRecipe({ recipeName: 'Planned Stew' })).expect(201);
+    const { student: first } = await signedUpAgent();
+    const { student: second } = await signedUpAgent();
+    const userId = (email) => db.prepare('SELECT UserID FROM Users WHERE Email = ?').get(email).UserID;
+    const addEntry = db.prepare("INSERT INTO MealPlanEntry (UserID, RecipeID, PlanDate, MealSlot) VALUES (?, ?, ?, 'dinner')");
+    const monday = weekStart();
 
-    const blocked = await admin.delete(`/api/admin/recipes/${recipeId}`).expect(409);
-    assert.ok(blocked.body.usedInCurrentPlans >= uses);
-    assert.ok(db.prepare('SELECT 1 FROM Recipes WHERE RecipeID = ?').get(recipeId), 'not deleted yet');
+    // First student: this week, twice (one meal plan). Second student: next week (one meal plan).
+    addEntry.run(userId(first.email), recipe.recipeId, monday);
+    addEntry.run(userId(first.email), recipe.recipeId, addDays(monday, 3));
+    addEntry.run(userId(second.email), recipe.recipeId, addDays(monday, 8));
+    // An old plan from a past week is not "current" and is not counted
+    addEntry.run(userId(second.email), recipe.recipeId, addDays(monday, -14));
 
-    await admin.delete(`/api/admin/recipes/${recipeId}?force=true`).expect(204);
-    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM MealPlanEntry WHERE RecipeID = ?').get(recipeId).n, 0);
+    const warning = await admin.delete(`/api/admin/recipes/${recipe.recipeId}`).expect(409);
+    assert.equal(warning.body.usedInMealPlans, 2);
+    assert.equal(warning.body.usedInMeals, 3);
+    assert.equal(warning.body.error, 'This recipe is used in 2 meal plans (3 meals) for this week or later.');
+    assert.ok(db.prepare('SELECT 1 FROM Recipes WHERE RecipeID = ?').get(recipe.recipeId), 'not deleted yet');
+
+    await admin.delete(`/api/admin/recipes/${recipe.recipeId}?force=true`).expect(204);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM Recipes WHERE RecipeID = ?').get(recipe.recipeId).n, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM MealPlanEntry WHERE RecipeID = ?').get(recipe.recipeId).n, 0,
+      'every MealPlanEntry row for the recipe is removed, past weeks included');
   });
 
   test('searches and filters recipes, showing how often each was planned', async () => {

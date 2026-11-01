@@ -13,6 +13,7 @@ function fillDetails(account) {
 function fillForms(account) {
   document.getElementById('goal').value = account.goal || '';
   document.getElementById('dietType').value = account.dietType || 'none';
+  document.getElementById('reminderDay').value = account.reminderDay || '';
   fillBudget(account);
   fillDetails(account);
 }
@@ -52,6 +53,7 @@ async function loadProfile() {
 
 handleForm('goal-form', 'goal-message', '/users/me/profile', 'Goal and diet saved.');
 handleForm('budget-form', 'budget-message', '/users/me/budget', 'Weekly budget saved.', fillBudget);
+handleForm('reminder-form', 'reminder-message', '/users/me/reminder', 'Reminder saved.');
 handleForm('details-form', 'details-message', '/users/me/details', 'Account details saved.', fillDetails);
 handleForm('password-form', 'password-message', '/users/me/password', 'Password changed.', (result, form) => form.reset());
 

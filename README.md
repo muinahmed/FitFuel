@@ -152,17 +152,22 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 | PUT | `/api/users/me/details` | student | Change `{ fullName, email }` |
 | PUT | `/api/users/me/budget` | student | Set `{ weeklyBudget }` (positive, kr) |
 | PUT | `/api/users/me/profile` | student | Set `{ goal, dietType }` |
+| PUT | `/api/users/me/reminder` | student | Choose the weekly reminder day `{ reminderDay }` (Monday–Sunday, or `''` for none) |
 | PUT | `/api/users/me/password` | student | Change `{ currentPassword, newPassword, confirmPassword }` |
 
 ### Recipes & Meal Planning – Albina
 
 | Method | Path | Login | Description |
 |---|---|---|---|
-| GET | `/api/recipes?search=&mealType=&diet=` | student | Recipe cards; search by name, filter by meal type (breakfast/lunch/dinner/snack) and diet (vegetarian/vegan/halal) |
+| GET | `/api/recipes?search=&mealType=&diet=` | student | Recipe cards; search by name, filter by meal type (breakfast/lunch/dinner/snack) and diet (vegetarian/vegan/halal); each card says if it is a favourite |
+| GET | `/api/recipes/favourites` | student | The student's favourite recipes, most recently saved first |
 | GET | `/api/recipes/:id` | student | One recipe with ingredients (per portion) and steps |
+| PUT | `/api/recipes/:id/favourite` | student | Save a recipe to favourites (FavouriteRecipe) |
+| DELETE | `/api/recipes/:id/favourite` | student | Remove a recipe from favourites |
 | GET | `/api/mealplans?week=` | student | The week's plan (Monday–Sunday, lunch + dinner), total cost vs budget, warning if over budget |
 | POST | `/api/mealplans/generate?week=` | student | Create or replace the week's plan within budget and diet |
-| GET | `/api/mealplans/shopping-list?week=` | student | The week's ingredients combined by name and unit, with tick state |
+| POST | `/api/mealplans/entries/:entryId/swap?week=` | student | Swap one meal for another recipe of the same meal type and diet that keeps the week within budget (if the week is already over budget, it may not cost more than the meal it replaces) |
+| GET | `/api/mealplans/shopping-list?week=` | student | The week's ingredients combined by name and unit, with tick state, cost per item and estimated total |
 | PUT | `/api/mealplans/shopping-list/items?week=` | student | Tick / untick `{ ingredientName, isChecked }` (saved in ShoppingCheck) |
 
 **Which week:** every meal plan route takes `?week=this` or `?week=next`. Without it, **Sunday means next week** (the coming Monday–Sunday) and Monday–Saturday means the current week. The meal plan and shopping list pages have a "This week / Next week" switch that defaults the same way; the choice is kept in the address, e.g. `/mealplan.html?week=next`.
@@ -233,7 +238,15 @@ Separate admin login using the Admins table (session key `adminId`, never set fo
 | 3 | FF-20 | Progress chart (weight line chart, workouts-per-week bar chart, canvas) | Done |
 | 3 | – | Meal plan: This week / Next week (Sunday plans next week) | Done (change request) |
 | Admin | – | Admin back end: users, recipes and workouts admin, dashboard | Done (Phase 4) |
-| 4 | FF-21 to FF-26 | Phone layout, spending vs budget, swap a meal, shopping list cost, favourites, weekly reminder | Planned |
+| 4 | FF-21 | Phone layout (mobile-first, Menu button on small screens, every page fits 375 px) | Done |
+| 4 | FF-22 | Weekly spending vs budget (meter on Home and Meal plan, warning colour when over) | Done |
+| 4 | FF-23 | Swap a meal (same meal type and diet, stays within budget, shopping list follows) | Done |
+| 4 | FF-24 | Shopping list cost (cost per item, estimated total) | Done |
+| 4 | FF-25 | Favourite recipes (heart button, Favourites page) | Done |
+| 4 | FF-26 | Weekly reminder (reminder day on Profile, banner on Home linking to next week's plan) | Done |
+| 4 | – | Final polish: empty/loading/error states, 404 page, accessibility check | Done |
+
+**Accessibility check (Sprint 4):** every page (student, admin and public) was tested with axe-core against WCAG 2.1 A/AA at phone and desktop width, including with dialogs and the menu open – no violations. Keyboard check: skip link, visible focus ring on every control, Menu opens with Enter and closes with Escape (focus returns to the Menu button). Dialogs use the native `<dialog>` element, so the browser keeps focus inside them and Escape closes them. All form fields have labels, images have alt text, and colour is never the only signal (over-budget and status badges also use text).
 
 ## Project structure
 
@@ -246,7 +259,7 @@ db/recipeQueries.js    Recipe search/detail queries shared by the student and ad
 routes/                One file per component area (header comment names the owner); routes/admin/ for the admin API
 middleware/            requireLogin (students) and requireAdmin (admins)
 utils/                 Shared helpers: dates, validation, passwords, sessions, search, diet filter
-public/                Student pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js), img/
-public/admin/          Admin pages; their scripts are in public/js/admin/ (adminNav.js, forms.js + one per page)
+public/                Student pages, 404.html, css/style.css, img/, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js)
+public/admin/          Admin pages (<body data-area="admin"> picks the admin header in nav.js); scripts in public/js/admin/ (forms.js + one per page)
 tests/                 API tests (node:test + supertest)
 ```

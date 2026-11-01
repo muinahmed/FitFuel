@@ -16,10 +16,24 @@ const getIngredients = db.prepare(`SELECT IngredientName AS ingredientName, Quan
                                    FROM RecipeIngredient WHERE RecipeID = ? ORDER BY RecipeIngredientID`);
 const getSteps = db.prepare(`SELECT StepNumber AS stepNumber, Instruction AS instruction
                              FROM RecipeStep WHERE RecipeID = ? ORDER BY StepNumber`);
+const getFavouriteIds = db.prepare('SELECT RecipeID FROM FavouriteRecipe WHERE UserID = ?');
+const getFavourites = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM Recipes r
+                                  JOIN FavouriteRecipe f ON f.RecipeID = r.RecipeID
+                                  WHERE f.UserID = ? ORDER BY f.DateSaved DESC, r.RecipeName`);
 
 // Database row -> API shape (booleans instead of 0/1, plus diet tags)
 function toRecipe(row, dietTags) {
   return { ...row, isVegetarian: Boolean(row.isVegetarian), dietTags };
+}
+
+// RecipeID -> ['halal', 'vegan', ...] for every recipe
+function allDietTags() {
+  const tagsByRecipe = new Map();
+  for (const { RecipeID, DietType } of getAllTags.all()) {
+    if (!tagsByRecipe.has(RecipeID)) tagsByRecipe.set(RecipeID, []);
+    tagsByRecipe.get(RecipeID).push(DietType);
+  }
+  return tagsByRecipe;
 }
 
 // Check ?search=&mealType=&diet= from a request. Returns { error } or the filters.
@@ -31,8 +45,9 @@ function readRecipeFilters(query) {
   return { search: search.trim(), mealType, diet };
 }
 
-// Recipe cards matching the filters (from readRecipeFilters), sorted by name
-function listRecipes({ search, mealType, diet }) {
+// Recipe cards matching the filters (from readRecipeFilters), sorted by name.
+// With favouritesOf (a UserID) each card also says whether that student saved it.
+function listRecipes({ search, mealType, diet }, { favouritesOf } = {}) {
   const conditions = [];
   const params = [];
   if (search) {
@@ -52,12 +67,17 @@ function listRecipes({ search, mealType, diet }) {
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
   const rows = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM Recipes r ${where} ORDER BY r.RecipeName`).all(...params);
 
-  const tagsByRecipe = new Map();
-  for (const { RecipeID, DietType } of getAllTags.all()) {
-    if (!tagsByRecipe.has(RecipeID)) tagsByRecipe.set(RecipeID, []);
-    tagsByRecipe.get(RecipeID).push(DietType);
-  }
-  return rows.map((row) => toRecipe(row, tagsByRecipe.get(row.recipeId) || []));
+  const tagsByRecipe = allDietTags();
+  const recipes = rows.map((row) => toRecipe(row, tagsByRecipe.get(row.recipeId) || []));
+  if (!favouritesOf) return recipes;
+  const favouriteIds = new Set(getFavouriteIds.all(favouritesOf).map((row) => row.RecipeID));
+  return recipes.map((recipe) => ({ ...recipe, isFavourite: favouriteIds.has(recipe.recipeId) }));
+}
+
+// A student's favourite recipes as cards, most recently saved first
+function listFavourites(userId) {
+  const tagsByRecipe = allDietTags();
+  return getFavourites.all(userId).map((row) => ({ ...toRecipe(row, tagsByRecipe.get(row.recipeId) || []), isFavourite: true }));
 }
 
 // One recipe with its ingredients and steps, or undefined if there is no such recipe
@@ -68,4 +88,4 @@ function getRecipeDetail(recipeId) {
   return { ...toRecipe(row, dietTags), ingredients: getIngredients.all(recipeId), steps: getSteps.all(recipeId) };
 }
 
-module.exports = { MEAL_TYPES, readRecipeFilters, listRecipes, getRecipeDetail };
+module.exports = { MEAL_TYPES, readRecipeFilters, listRecipes, listFavourites, getRecipeDetail };

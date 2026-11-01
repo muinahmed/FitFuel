@@ -1,5 +1,6 @@
 // Accounts component – Muin Ahmed
-// The logged-in student's own account: details, goal and diet, budget and password (FF-9, FF-10).
+// The logged-in student's own account: details, goal and diet, budget, reminder day and password
+// (FF-9, FF-10, FF-26).
 // Every route works on req.session.userId only, so students can never touch another student's data.
 const express = require('express');
 const db = require('../db/database');
@@ -10,6 +11,7 @@ const { hashPassword, passwordMatches } = require('../utils/passwords');
 
 const router = express.Router();
 const GOALS = ['lose weight', 'build muscle', 'stay healthy'];
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 router.use(requireLogin);
 
@@ -24,6 +26,7 @@ const findOtherUserWithEmail = db.prepare('SELECT UserID FROM Users WHERE Email 
 const updateDetails = db.prepare('UPDATE Users SET FullName = ?, Email = ? WHERE UserID = ?');
 const updateBudget = db.prepare('UPDATE Users SET WeeklyBudget = ? WHERE UserID = ?');
 const updateGoalAndDiet = db.prepare('UPDATE UserProfile SET Goal = ?, DietType = ? WHERE UserID = ?');
+const updateReminderDay = db.prepare('UPDATE UserProfile SET ReminderDay = ? WHERE UserID = ?');
 const getPasswordHash = db.prepare('SELECT PasswordHash FROM Users WHERE UserID = ?');
 const updatePasswordHash = db.prepare('UPDATE Users SET PasswordHash = ? WHERE UserID = ?');
 
@@ -64,6 +67,16 @@ router.put('/me/profile', (req, res) => {
   if (!DIET_TYPES.includes(dietType)) return res.status(400).json({ error: 'Please choose a diet type.' });
 
   updateGoalAndDiet.run(goal, dietType, req.session.userId);
+  res.json(getAccount.get(req.session.userId));
+});
+
+// PUT /api/users/me/reminder – choose the weekly reminder day { reminderDay: 'Sunday' … or '' for none } (FF-26)
+router.put('/me/reminder', (req, res) => {
+  const { reminderDay } = req.body;
+  if (reminderDay !== '' && reminderDay !== null && !WEEKDAYS.includes(reminderDay)) {
+    return res.status(400).json({ error: 'Please choose a day of the week, or no reminder.' });
+  }
+  updateReminderDay.run(reminderDay || null, req.session.userId);
   res.json(getAccount.get(req.session.userId));
 });
 

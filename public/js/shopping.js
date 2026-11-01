@@ -27,6 +27,7 @@ function itemHtml(item, index) {
       <label for="item-${index}">
         <span class="shopping-item__name">${escapeHtml(item.ingredientName)}</span>
         <span class="shopping-item__quantity">${formatQuantity(item.quantity)} ${escapeHtml(item.unit)}</span>
+        <span class="shopping-item__cost">${formatKr(item.cost)}</span>
       </label>
     </li>`;
 }
@@ -40,6 +41,9 @@ async function loadShoppingList() {
     document.getElementById('week-label').textContent = `Week of ${formatDate(list.weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`;
     document.getElementById('plan-link').href = `/mealplan.html${weekQuery(list.week)}`;
     shoppingList.innerHTML = '';
+    const totalCost = document.getElementById('total-cost');
+    totalCost.hidden = list.items.length === 0;
+    totalCost.innerHTML = `Estimated cost: <strong>${formatKr(list.totalCost)}</strong>`;
     if (list.items.length === 0) {
       const weekName = list.week === 'next' ? 'next week' : 'this week';
       progressText.innerHTML = `Your shopping list for ${weekName} is empty. <a href="/mealplan.html${weekQuery(list.week)}">Generate a meal plan</a> to fill it.`;

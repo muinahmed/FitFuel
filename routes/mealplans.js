@@ -1,5 +1,6 @@
 // Recipes & Meal Planning component – Albina Rana
-// Weekly meal plan and shopping list for the logged-in student (FF-13, FF-14, FF-15).
+// Weekly meal plan, swapping a meal, and the shopping list with its cost for the logged-in student
+// (FF-13, FF-14, FF-15, FF-23, FF-24).
 // A week runs Monday to Sunday; each day has a lunch and a dinner.
 // Every route works on one week, chosen with ?week=this or ?week=next. Without a choice,
 // Sunday means next week (the current week is nearly over) and every other day means this week.
@@ -25,10 +26,16 @@ const getWeekEntries = db.prepare(`
   WHERE e.UserID = ? AND e.PlanDate BETWEEN ? AND ?`);
 const deleteWeekEntries = db.prepare('DELETE FROM MealPlanEntry WHERE UserID = ? AND PlanDate BETWEEN ? AND ?');
 const insertEntry = db.prepare('INSERT INTO MealPlanEntry (UserID, RecipeID, PlanDate, MealSlot) VALUES (?, ?, ?, ?)');
+const getEntry = db.prepare(`
+  SELECT e.EntryID AS entryId, e.MealSlot AS mealSlot, e.RecipeID AS recipeId,
+         r.RecipeName AS recipeName, r.PricePerPortion AS pricePerPortion
+  FROM MealPlanEntry e JOIN Recipes r ON r.RecipeID = e.RecipeID
+  WHERE e.EntryID = ? AND e.UserID = ? AND e.PlanDate BETWEEN ? AND ?`);
+const updateEntryRecipe = db.prepare('UPDATE MealPlanEntry SET RecipeID = ? WHERE EntryID = ?');
 
-// Ingredients of the week's plan, combined by name and unit
+// Ingredients of the week's plan, combined by name and unit, with their estimated cost
 const getShoppingItems = db.prepare(`
-  SELECT i.IngredientName AS ingredientName, i.Unit AS unit, SUM(i.Quantity) AS quantity,
+  SELECT i.IngredientName AS ingredientName, i.Unit AS unit, SUM(i.Quantity) AS quantity, SUM(i.Cost) AS cost,
          MAX(COALESCE(c.IsChecked, 0)) AS isChecked
   FROM MealPlanEntry e
   JOIN RecipeIngredient i ON i.RecipeID = e.RecipeID
@@ -64,7 +71,7 @@ function toOre(kr) {
 // Lunch and dinner recipes that fit the diet, cheapest first
 function candidateRecipes(dietType) {
   const diet = dietCondition(dietType);
-  const query = db.prepare(`SELECT r.RecipeID AS recipeId, r.PricePerPortion AS pricePerPortion
+  const query = db.prepare(`SELECT r.RecipeID AS recipeId, r.RecipeName AS recipeName, r.PricePerPortion AS pricePerPortion
                             FROM Recipes r WHERE r.MealType = ? AND ${diet.sql}
                             ORDER BY r.PricePerPortion, r.RecipeID`);
   return {
@@ -169,12 +176,46 @@ router.post('/generate', (req, res) => {
   res.status(201).json(buildWeekPlan(userId, req.week));
 });
 
-// GET /api/mealplans/shopping-list?week= – combined ingredients for the week's plan
+// POST /api/mealplans/entries/:entryId/swap?week= – replace one planned meal with another recipe of the
+// same meal type and diet. The new recipe must keep the week within budget; if the week is already
+// over budget (cheapest plan), it may not cost more than the meal it replaces. Least-used recipes first.
+router.post('/entries/:entryId/swap', (req, res) => {
+  const userId = req.session.userId;
+  const { start, end } = req.week;
+  const entry = getEntry.get(Number(req.params.entryId), userId, start, end);
+  if (!entry) return res.status(404).json({ error: "This meal is not in your plan for that week." });
+
+  const { weeklyBudget, dietType } = getBudgetAndDiet.get(userId);
+  const weekEntries = getWeekEntries.all(userId, start, end);
+  const otherMealsOre = weekEntries.reduce((sum, meal) => sum + toOre(meal.pricePerPortion), 0) - toOre(entry.pricePerPortion);
+  const maxPriceOre = Math.max(toOre(weeklyBudget) - otherMealsOre, toOre(entry.pricePerPortion));
+
+  let options = candidateRecipes(dietType)[entry.mealSlot]
+    .filter((recipe) => recipe.recipeId !== entry.recipeId && toOre(recipe.pricePerPortion) <= maxPriceOre);
+  if (options.length === 0) {
+    return res.status(409).json({ error: 'No other recipe fits your diet and budget for this meal.' });
+  }
+
+  const timesUsed = (recipeId) => weekEntries.filter((meal) => meal.recipeId === recipeId).length;
+  const fewestUses = Math.min(...options.map((recipe) => timesUsed(recipe.recipeId)));
+  options = options.filter((recipe) => timesUsed(recipe.recipeId) === fewestUses);
+  const chosen = options[Math.floor(Math.random() * options.length)];
+
+  updateEntryRecipe.run(chosen.recipeId, entry.entryId);
+  res.json({ ...buildWeekPlan(userId, req.week), swapped: { from: entry.recipeName, to: chosen.recipeName } });
+});
+
+// GET /api/mealplans/shopping-list?week= – combined ingredients for the week's plan, with estimated cost
 router.get('/shopping-list', (req, res) => {
   const { start, end, name } = req.week;
-  const items = getShoppingItems.all(start, req.session.userId, start, end)
-    .map((item) => ({ ...item, quantity: Math.round(item.quantity * 100) / 100, isChecked: Boolean(item.isChecked) }));
-  res.json({ week: name, weekStart: start, items });
+  const items = getShoppingItems.all(start, req.session.userId, start, end).map((item) => ({
+    ...item,
+    quantity: Math.round(item.quantity * 100) / 100,
+    cost: toOre(item.cost) / 100,
+    isChecked: Boolean(item.isChecked),
+  }));
+  const totalCost = items.reduce((sum, item) => sum + toOre(item.cost), 0) / 100;
+  res.json({ week: name, weekStart: start, totalCost, items });
 });
 
 // PUT /api/mealplans/shopping-list/items?week= – tick or untick an ingredient { ingredientName, isChecked }

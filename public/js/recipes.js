@@ -1,19 +1,9 @@
-// Recipes page (Recipes & Meal Planning – Albina): search, filter and open recipes.
+// Recipes page (Recipes & Meal Planning – Albina): search, filter, open and favourite recipes.
 const filterForm = document.getElementById('recipe-filters');
 const recipeGrid = document.getElementById('recipe-grid');
 const resultCount = document.getElementById('result-count');
 const recipesMessage = document.getElementById('page-message');
 let searchTimer = null;
-
-function recipeCardHtml(recipe) {
-  return `
-    <article class="card recipe-card">
-      <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
-      <h2>${escapeHtml(recipe.recipeName)}</h2>
-      <p class="recipe-card__facts"><strong>${formatKr(recipe.pricePerPortion)}</strong> per portion · ${recipe.calories} kcal</p>
-      <button type="button" class="btn btn--secondary" data-recipe-id="${recipe.recipeId}">View recipe</button>
-    </article>`;
-}
 
 // Fetch recipes that match the current search and filters
 async function loadRecipes() {
@@ -26,6 +16,7 @@ async function loadRecipes() {
       ? recipes.map(recipeCardHtml).join('')
       : '<p class="placeholder">No recipes match your search. Try other words or filters.</p>';
   } catch (error) {
+    resultCount.textContent = '';
     showMessage(recipesMessage, error.message);
   }
 }
@@ -51,5 +42,6 @@ recipeGrid.addEventListener('click', (event) => {
   const button = event.target.closest('[data-recipe-id]');
   if (button) openRecipeDetail(button.dataset.recipeId);
 });
+setUpFavouriteButtons(recipeGrid, recipesMessage);
 
 setUp();

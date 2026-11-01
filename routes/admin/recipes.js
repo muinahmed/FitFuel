@@ -5,7 +5,7 @@ const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
 const { MEAL_TYPES, readRecipeFilters, listRecipes, getRecipeDetail } = require('../../db/recipeQueries');
 const { cleanText, readNumber } = require('../../utils/validation');
-const { weekStart } = require('../../utils/dates');
+const { weekStart, parseDateString } = require('../../utils/dates');
 
 const router = express.Router();
 const DIET_TAGS = ['vegan', 'halal'];
@@ -25,7 +25,8 @@ const insertTag = db.prepare('INSERT INTO RecipeDietTag (RecipeID, DietType) VAL
 const deleteIngredients = db.prepare('DELETE FROM RecipeIngredient WHERE RecipeID = ?');
 const deleteSteps = db.prepare('DELETE FROM RecipeStep WHERE RecipeID = ?');
 const deleteTags = db.prepare('DELETE FROM RecipeDietTag WHERE RecipeID = ?');
-const countCurrentPlanUses = db.prepare('SELECT COUNT(*) AS count FROM MealPlanEntry WHERE RecipeID = ? AND PlanDate >= ?');
+const getCurrentPlanUses = db.prepare('SELECT UserID, PlanDate FROM MealPlanEntry WHERE RecipeID = ? AND PlanDate >= ?');
+const deleteRecipeEntries = db.prepare('DELETE FROM MealPlanEntry WHERE RecipeID = ?');
 const getUsage = db.prepare(`
   SELECT r.RecipeID AS recipeId, r.RecipeName AS recipeName, r.MealType AS mealType, COUNT(e.EntryID) AS timesPlanned
   FROM Recipes r LEFT JOIN MealPlanEntry e ON e.RecipeID = r.RecipeID
@@ -81,6 +82,19 @@ function insertRecipeParts(recipeId, recipe) {
   for (const item of recipe.ingredients) insertIngredient.run(recipeId, item.ingredientName, item.quantity, item.unit, item.cost);
   recipe.steps.forEach((instruction, index) => insertStep.run(recipeId, index + 1, instruction));
   for (const tag of recipe.dietTags) insertTag.run(recipeId, tag);
+}
+
+// How many weekly meal plans (one per student per week, this week or later) use the recipe,
+// and how many meals that is in total
+function currentPlanUsage(recipeId) {
+  const rows = getCurrentPlanUses.all(recipeId, weekStart());
+  const plans = new Set(rows.map((row) => `${row.UserID}|${weekStart(parseDateString(row.PlanDate))}`));
+  return { mealPlans: plans.size, meals: rows.length };
+}
+
+// "1 meal plan", "3 meal plans"
+function countText(count, noun) {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
 }
 
 // The recipe id in /recipes/:id if that recipe exists, otherwise null
@@ -142,21 +156,27 @@ router.put('/:id', (req, res) => {
 });
 
 // DELETE /api/admin/recipes/:id[?force=true]
-// If students have the recipe in this week's or a future meal plan, answer 409 with the count
-// so the admin can confirm; ?force=true deletes it anyway (those meals leave the plans).
+// If students have the recipe in this week's or a future meal plan, answer 409 saying how many
+// meal plans use it, so the admin can confirm. ?force=true deletes it anyway: its MealPlanEntry
+// rows are removed (those meals leave the plans) together with the recipe.
 router.delete('/:id', (req, res) => {
   const recipeId = existingRecipeId(req);
   if (!recipeId) return res.status(404).json({ error: 'Recipe not found.' });
 
-  const { count } = countCurrentPlanUses.get(recipeId, weekStart());
-  if (count > 0 && req.query.force !== 'true') {
+  const usage = currentPlanUsage(recipeId);
+  if (usage.mealPlans > 0 && req.query.force !== 'true') {
     return res.status(409).json({
-      error: `This recipe is in ${count} meal${count === 1 ? '' : 's'} in students' current meal plans.`,
-      usedInCurrentPlans: count,
+      error: `This recipe is used in ${countText(usage.mealPlans, 'meal plan')} `
+        + `(${countText(usage.meals, 'meal')}) for this week or later.`,
+      usedInMealPlans: usage.mealPlans,
+      usedInMeals: usage.meals,
     });
   }
 
-  deleteRecipe.run(recipeId);
+  db.transaction(() => {
+    deleteRecipeEntries.run(recipeId);
+    deleteRecipe.run(recipeId);
+  })();
   res.status(204).end();
 });
 
