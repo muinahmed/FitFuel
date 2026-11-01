@@ -24,6 +24,9 @@ if (!sessionSecret) {
   console.warn('SESSION_SECRET is not set (copy .env.example to .env). Using a random secret: logins reset on restart.');
 }
 
+// Hosts like Render put a proxy in front of the app; trust it so HTTPS is detected correctly
+app.set('trust proxy', 1);
+
 app.use(express.json());
 // Express 5 leaves req.body undefined when there is no JSON body; routes expect an object
 app.use((req, res, next) => {
@@ -35,7 +38,8 @@ app.use(session({
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 },
+  // secure: 'auto' sends the cookie over HTTPS only when the site is on HTTPS (Render), plain HTTP works locally
+  cookie: { httpOnly: true, sameSite: 'lax', secure: 'auto', maxAge: 7 * 24 * 60 * 60 * 1000 },
 }));
 
 // ---------- API routes ----------
@@ -90,9 +94,8 @@ module.exports = app;
 
 // `npm start` runs this file directly
 if (require.main === module) {
-  // First start on an empty database: fill it with demo data
-  if (db.prepare('SELECT COUNT(*) AS count FROM Admins').get().count === 0) {
-    require('./db/seed').seedDatabase(db);
+  // The tables already exist (db/database.js creates them). A brand-new database also gets demo data.
+  if (require('./db/seed').seedIfEmpty(db)) {
     console.log('New database detected - demo data added (run `npm run seed` to reset it).');
   }
 

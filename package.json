@@ -10,7 +10,7 @@
     "test": "node --test"
   },
   "engines": {
-    "node": ">=22"
+    "node": "24.x"
   },
   "author": "The Agile Trio (Muin Ahmed, Albina Rana, Priyanka Pant)",
   "license": "UNLICENSED",

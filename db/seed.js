@@ -358,7 +358,16 @@ function seedDatabase(db) {
   })();
 }
 
-module.exports = { seedDatabase };
+// Seed only a brand-new database (no admins, users or recipes yet). Returns true if it seeded.
+// Used on every start-up, so hosts without lasting storage (like Render free) start with demo data.
+function seedIfEmpty(db) {
+  const count = (table) => db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get().n;
+  if (count('Admins') > 0 || count('Users') > 0 || count('Recipes') > 0) return false;
+  seedDatabase(db);
+  return true;
+}
+
+module.exports = { seedDatabase, seedIfEmpty };
 
 // `npm run seed` runs this file directly
 if (require.main === module) {

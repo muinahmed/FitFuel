@@ -54,6 +54,21 @@ npm start                # http://localhost:3000
 
 The database file is `db/fitfuel.db` and uploaded photos are saved in `public/uploads/` (both ignored by git). Older databases get new columns automatically on start-up (see `db/database.js`). Without a `.env` file the app still starts, but uses a random session secret, so everyone is logged out on restart.
 
+## Deploy on Render (free plan)
+
+Create a **Web Service** from the GitHub repository with:
+
+| Setting | Value |
+|---|---|
+| Runtime | Node (version from `engines` in package.json: 24.x) |
+| Build command | `npm install` |
+| Start command | `npm start` |
+| Environment variable | `SESSION_SECRET` = a long random string (Render can generate one) |
+
+Render sets `PORT` itself; the server uses it (or 3000 locally). The server trusts Render's proxy, so the login cookie is sent over HTTPS only.
+
+**The free plan does not keep files.** Every restart or redeploy starts with an empty disk: the server creates the tables and fills them with the demo data again, so the demo accounts always work, but new sign-ups, meal plans, logs and uploaded photos are lost on restart. Sessions are kept in memory, so everyone is logged out on restart too. That is fine for a demo; keeping data would need a paid disk or an external database.
+
 ## Demo accounts
 
 Demo data only – do not reuse these passwords anywhere.
