@@ -39,4 +39,24 @@ function checkPositiveAmount(amount, label) {
   return null;
 }
 
-module.exports = { cleanText, checkFullName, checkEmail, checkNewPassword, checkPositiveAmount };
+// A number typed by the user, if it is between min and max (and whole when integer is true); otherwise null
+function readNumber(value, min, max, { integer = false } = {}) {
+  if (typeof value !== 'number' && typeof value !== 'string') return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < min || number > max) return null;
+  if (integer && !Number.isInteger(number)) return null;
+  return number;
+}
+
+// An http(s) web address, or null if it is anything else (blocks e.g. javascript: links)
+function readWebAddress(value) {
+  try {
+    const address = new URL(value);
+    return address.protocol === 'http:' || address.protocol === 'https:' ? address.href : null;
+  } catch {
+    return null;
+  }
+}
+
+module.exports = { cleanText, checkFullName, checkEmail, checkNewPassword, checkPositiveAmount, readNumber, readWebAddress };

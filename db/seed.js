@@ -2,10 +2,9 @@
 // Run with `npm run seed`. Also used by the tests and on first start-up.
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcrypt');
+const { hashPasswordSync } = require('../utils/passwords');
 const { daysAgo } = require('../utils/dates');
 
-const BCRYPT_COST = 10;
 
 // Child tables first so foreign keys never block a drop
 const ALL_TABLES = [
@@ -317,13 +316,13 @@ function insertWorkouts(db) {
 
 // Returns the UserID of the first demo student (who gets example progress data)
 function insertUsers(db) {
-  db.prepare('INSERT INTO Admins (Username, PasswordHash) VALUES (?, ?)').run('admin', bcrypt.hashSync('Admin123!', BCRYPT_COST));
+  db.prepare('INSERT INTO Admins (Username, PasswordHash) VALUES (?, ?)').run('admin', hashPasswordSync('Admin123!'));
 
   const insertUser = db.prepare(`INSERT INTO Users (FullName, Email, PasswordHash, WeeklyBudget, IsActive, DateJoined)
                                  VALUES (?, ?, ?, ?, 1, ?)`);
   const insertProfile = db.prepare(`INSERT INTO UserProfile (UserID, Goal, DietType, ReminderDay, TrainingDays)
                                     VALUES (?, ?, ?, ?, ?)`);
-  const studentHash = bcrypt.hashSync('Student123!', BCRYPT_COST);
+  const studentHash = hashPasswordSync('Student123!');
 
   const userIds = STUDENTS.map((student) => {
     const { lastInsertRowid: userId } = insertUser.run(

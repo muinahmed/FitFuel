@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Users admin – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <h1>Users</h1>
+    <div id="page-message" class="message" role="status"></div>
+
+    <div class="grid grid--progress">
+      <section class="card" aria-labelledby="stats-heading">
+        <h2 id="stats-heading">User statistics</h2>
+        <div class="stat-row" id="user-stats"></div>
+      </section>
+      <section class="card" aria-labelledby="signups-heading">
+        <h2 id="signups-heading">New sign-ups per week</h2>
+        <div class="chart" id="signup-chart">
+          <canvas role="img" aria-label="Bar chart of new sign-ups per week"></canvas>
+        </div>
+      </section>
+    </div>
+
+    <section class="card section-heading" aria-labelledby="list-heading">
+      <h2 id="list-heading">All users</h2>
+      <form id="user-search" class="filter-bar filter-bar--single" role="search">
+        <div class="form-field">
+          <label for="search">Search by name or email</label>
+          <input id="search" name="search" type="search" maxlength="100">
+        </div>
+      </form>
+      <p id="result-count" class="muted" aria-live="polite"></p>
+      <div class="table-scroll">
+        <table class="data-table admin-table">
+          <thead>
+            <tr>
+              <th scope="col" data-sort="name"><button type="button" class="sort-button">Name</button></th>
+              <th scope="col">Email</th>
+              <th scope="col">Budget</th>
+              <th scope="col" data-sort="dateJoined"><button type="button" class="sort-button">Joined</button></th>
+              <th scope="col">Status</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="user-table"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog class="recipe-dialog form-dialog" id="user-dialog" aria-labelledby="user-dialog-title">
+    <button type="button" class="dialog-close" aria-label="Close" data-close-dialog>×</button>
+    <h2 id="user-dialog-title">Edit user</h2>
+    <p class="muted">Passwords cannot be seen or changed here.</p>
+    <div class="message" role="alert"></div>
+    <form>
+      <div class="form-field">
+        <label for="edit-fullName">Full name</label>
+        <input id="edit-fullName" name="fullName" maxlength="50" required>
+      </div>
+      <div class="form-field">
+        <label for="edit-email">Email</label>
+        <input id="edit-email" name="email" type="email" maxlength="100" required>
+      </div>
+      <div class="form-field">
+        <label for="edit-weeklyBudget">Weekly budget (kr, 0 = not set)</label>
+        <input id="edit-weeklyBudget" name="weeklyBudget" type="number" min="0" max="9999.99" step="0.01" required>
+      </div>
+      <div class="button-row">
+        <button type="submit" class="btn">Save changes</button>
+        <button type="button" class="btn btn--secondary" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin/adminNav.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/admin/forms.js"></script>
+  <script src="/js/admin/users.js"></script>
+</body>
+</html>

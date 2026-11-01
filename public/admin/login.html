@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin log in – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <main id="main" class="container container--narrow">
+    <img class="auth-logo" src="/img/logo.png" alt="FitFuel" width="80" height="80">
+    <div class="card">
+      <h1>Admin log in</h1>
+      <p class="muted">For FitFuel administrators only. Students log in <a href="/login.html">here</a>.</p>
+      <div id="form-message" class="message" role="alert"></div>
+      <form id="admin-login-form">
+        <div class="form-field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+        <div class="form-field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn--block">Log in</button>
+      </form>
+    </div>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/admin/login.js"></script>
+</body>
+</html>

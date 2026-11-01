@@ -5,6 +5,7 @@ const express = require('express');
 const db = require('../db/database');
 const { requireLogin } = require('../middleware/requireLogin');
 const { today, weekStart, addDays } = require('../utils/dates');
+const { readNumber } = require('../utils/validation');
 
 const router = express.Router();
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -88,8 +89,8 @@ router.get('/plan', (req, res) => {
 
 // PUT /api/workouts/plan – choose how many days a week to train { trainingDays: 2–5 }
 router.put('/plan', (req, res) => {
-  const trainingDays = Number(req.body.trainingDays);
-  if (typeof req.body.trainingDays === 'boolean' || !Number.isInteger(trainingDays) || !TRAINING_SCHEDULES[trainingDays]) {
+  const trainingDays = readNumber(req.body.trainingDays, 2, 5, { integer: true });
+  if (trainingDays === null) {
     return res.status(400).json({ error: 'Please choose between 2 and 5 training days per week.' });
   }
   updateTrainingDays.run(trainingDays, req.session.userId);

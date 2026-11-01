@@ -13,6 +13,7 @@ try {
 
 const db = require('./db/database');
 const { requireLoginPage } = require('./middleware/requireLogin');
+const { requireAdminPage } = require('./middleware/requireAdmin');
 
 const app = express();
 
@@ -43,6 +44,10 @@ app.use('/api/recipes', require('./routes/recipes'));
 app.use('/api/mealplans', require('./routes/mealplans'));
 app.use('/api/workouts', require('./routes/workouts'));
 app.use('/api/progress', require('./routes/progress'));
+app.use('/api/admin/auth', require('./routes/admin/auth'));
+app.use('/api/admin/users', require('./routes/admin/users'));
+app.use('/api/admin/recipes', require('./routes/admin/recipes'));
+app.use('/api/admin/workouts', require('./routes/admin/workouts'));
 
 // Unknown API paths get a JSON error instead of an HTML page
 app.use('/api', (req, res) => {
@@ -55,6 +60,10 @@ app.use('/api', (req, res) => {
 const STUDENT_PAGES = ['/home.html', '/profile.html', '/recipes.html', '/mealplan.html', '/shopping.html',
   '/workouts.html', '/progress.html', '/favourites.html'];
 app.use(STUDENT_PAGES, requireLoginPage);
+// Admin pages need an admin login (students are sent to the admin login page too)
+const ADMIN_PAGES = ['/admin/dashboard.html', '/admin/users.html', '/admin/recipes.html', '/admin/workouts.html'];
+app.use(ADMIN_PAGES, requireAdminPage);
+app.get(['/admin', '/admin/'], (req, res) => res.redirect('/admin/dashboard.html'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------- Errors ----------

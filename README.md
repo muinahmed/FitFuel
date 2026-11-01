@@ -10,9 +10,9 @@ University Agile team project by **The Agile Trio**.
 
 | Component | Owner | Back-end files |
 |---|---|---|
-| Accounts (sign up, login, profile, navigation, users admin) | **Muin Ahmed** (Scrum Master) | `routes/auth.js`, `routes/users.js`, `middleware/requireLogin.js` |
-| Recipes & Meal Planning (recipes, meal plan, shopping list, recipes admin) | **Albina Rana** | `routes/recipes.js`, `routes/mealplans.js`, `utils/dietFilter.js` |
-| Workouts & Progress (workouts, logs, weight, charts, workouts admin) | **Priyanka Pant** | `routes/workouts.js`, `routes/progress.js`, `public/js/charts.js` |
+| Accounts (sign up, login, profile, navigation, users admin) | **Muin Ahmed** (Scrum Master) | `routes/auth.js`, `routes/users.js`, `routes/admin/auth.js`, `routes/admin/users.js`, `middleware/` |
+| Recipes & Meal Planning (recipes, meal plan, shopping list, recipes admin) | **Albina Rana** | `routes/recipes.js`, `routes/mealplans.js`, `routes/admin/recipes.js`, `db/recipeQueries.js`, `utils/dietFilter.js` |
+| Workouts & Progress (workouts, logs, weight, charts, workouts admin) | **Priyanka Pant** | `routes/workouts.js`, `routes/progress.js`, `routes/admin/workouts.js`, `public/js/charts.js` |
 
 Shared: `server.js`, `db/`, `utils/`, `public/css/style.css`, `public/js/api.js`, `public/js/nav.js`.
 
@@ -48,7 +48,7 @@ Demo data only – do not reuse these passwords anywhere.
 
 | Role | Login | Password | Notes |
 |---|---|---|---|
-| Admin | `admin` | `Admin123!` | Admin pages arrive in Phase 4 |
+| Admin | `admin` | `Admin123!` | Log in at http://localhost:3000/admin/login.html |
 | Student | `emma@example.com` | `Student123!` | Budget 300 kr, lose weight, vegetarian, has 6 weeks of weight and workout history |
 | Student | `ali@example.com` | `Student123!` | Budget 450 kr, build muscle, halal |
 | Student | `sofie@example.com` | `Student123!` | Budget 600 kr, stay healthy, vegan |
@@ -187,7 +187,30 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 
 ### Admin
 
-Coming in Phase 4.
+Separate admin login using the Admins table (session key `adminId`, never set for students). Every `/api/admin/*` route uses `requireAdmin` and answers 401 to logged-out visitors and students; the admin pages (`/admin/dashboard.html`, `users.html`, `recipes.html`, `workouts.html`) redirect them to `/admin/login.html`.
+
+| Method | Path | Owner | Description |
+|---|---|---|---|
+| POST | `/api/admin/auth/login` | Muin | Admin log in `{ username, password }` |
+| POST | `/api/admin/auth/logout` | Muin | Admin log out |
+| GET | `/api/admin/auth/me` | Muin | Logged-in admin's username |
+| GET | `/api/admin/users?search=&sort=&order=` | Muin | View, search (name or email) and sort (`name` or `dateJoined`, `asc`/`desc`) all users – no passwords |
+| GET | `/api/admin/users/stats` | Muin | Total, active, inactive, new sign-ups per week (last 8 weeks, from DateJoined) |
+| PUT | `/api/admin/users/:id` | Muin | Edit `{ fullName, email, weeklyBudget }` (passwords cannot be seen or changed) |
+| PUT | `/api/admin/users/:id/status` | Muin | Deactivate / reactivate `{ isActive }` (a deactivated student is logged out at once) |
+| DELETE | `/api/admin/users/:id` | Muin | Delete the user and, by cascade, all their data |
+| GET | `/api/admin/recipes?search=&mealType=&diet=` | Albina | Search / filter recipes, with how often each was planned |
+| GET | `/api/admin/recipes/usage` | Albina | Recipe usage: MealPlanEntry count per recipe, most popular first |
+| GET | `/api/admin/recipes/:id` | Albina | One recipe with ingredients and steps |
+| POST | `/api/admin/recipes` | Albina | Add a recipe with ingredients and steps (price = sum of ingredient costs) |
+| PUT | `/api/admin/recipes/:id` | Albina | Edit a recipe (replaces ingredients, steps and diet tags) |
+| DELETE | `/api/admin/recipes/:id` | Albina | Delete; **warns with 409** if the recipe is in this week's or a future meal plan – `?force=true` deletes anyway |
+| GET | `/api/admin/workouts?goal=&difficulty=&beginner=` | Priyanka | Filter workouts, with exercise and log counts |
+| GET | `/api/admin/workouts/activity` | Priyanka | Workout activity: completed WorkoutLog count per workout, most logged first |
+| GET | `/api/admin/workouts/:id` | Priyanka | One workout with exercises |
+| POST | `/api/admin/workouts` | Priyanka | Add a workout with exercises (video links must start with http:// or https://) |
+| PUT | `/api/admin/workouts/:id` | Priyanka | Edit a workout (replaces exercises) |
+| DELETE | `/api/admin/workouts/:id` | Priyanka | Delete a workout, its exercises and its logs |
 
 ## User stories and Jira tickets
 
@@ -209,6 +232,7 @@ Coming in Phase 4.
 | 3 | FF-19 | Log weight (add, edit, delete) | Done |
 | 3 | FF-20 | Progress chart (weight line chart, workouts-per-week bar chart, canvas) | Done |
 | 3 | – | Meal plan: This week / Next week (Sunday plans next week) | Done (change request) |
+| Admin | – | Admin back end: users, recipes and workouts admin, dashboard | Done (Phase 4) |
 | 4 | FF-21 to FF-26 | Phone layout, spending vs budget, swap a meal, shopping list cost, favourites, weekly reminder | Planned |
 
 ## Project structure
@@ -218,9 +242,11 @@ server.js              Express app: sessions, routes, page protection, errors
 db/schema.sql          All CREATE TABLE statements
 db/database.js         SQLite connection (creates tables if missing)
 db/seed.js             Demo data (npm run seed)
-routes/                One file per component area (header comment names the owner)
-middleware/            requireLogin (and requireAdmin in Phase 4)
-utils/                 Shared date and validation helpers
-public/                HTML pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js), img/
+db/recipeQueries.js    Recipe search/detail queries shared by the student and admin recipe routes
+routes/                One file per component area (header comment names the owner); routes/admin/ for the admin API
+middleware/            requireLogin (students) and requireAdmin (admins)
+utils/                 Shared helpers: dates, validation, passwords, sessions, search, diet filter
+public/                Student pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js), img/
+public/admin/          Admin pages; their scripts are in public/js/admin/ (adminNav.js, forms.js + one per page)
 tests/                 API tests (node:test + supertest)
 ```

@@ -2,14 +2,13 @@
 // The logged-in student's own account: details, goal and diet, budget and password (FF-9, FF-10).
 // Every route works on req.session.userId only, so students can never touch another student's data.
 const express = require('express');
-const bcrypt = require('bcrypt');
 const db = require('../db/database');
 const { requireLogin } = require('../middleware/requireLogin');
 const { cleanText, checkFullName, checkEmail, checkNewPassword, checkPositiveAmount } = require('../utils/validation');
 const { DIET_TYPES } = require('../utils/dietFilter');
+const { hashPassword, passwordMatches } = require('../utils/passwords');
 
 const router = express.Router();
-const BCRYPT_COST = 10;
 const GOALS = ['lose weight', 'build muscle', 'stay healthy'];
 
 router.use(requireLogin);
@@ -76,14 +75,14 @@ router.put('/me/password', async (req, res) => {
   }
 
   const { PasswordHash } = getPasswordHash.get(req.session.userId);
-  if (!(await bcrypt.compare(currentPassword, PasswordHash))) {
+  if (!(await passwordMatches(currentPassword, PasswordHash))) {
     return res.status(400).json({ error: 'Your current password is incorrect.' });
   }
 
   const error = checkNewPassword(newPassword, confirmPassword);
   if (error) return res.status(400).json({ error });
 
-  updatePasswordHash.run(await bcrypt.hash(newPassword, BCRYPT_COST), req.session.userId);
+  updatePasswordHash.run(await hashPassword(newPassword), req.session.userId);
   res.json({ message: 'Password changed' });
 });
 

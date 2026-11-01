@@ -48,4 +48,23 @@ function isDateString(value) {
   return toDateString(parseDateString(value)) === value;
 }
 
-module.exports = { toDateString, today, daysAgo, parseDateString, addDays, weekStart, isDateString };
+// Monday of the oldest week when looking back over the last `weeks` weeks (this week included)
+function firstWeekStart(weeks) {
+  return addDays(weekStart(), -7 * (weeks - 1));
+}
+
+// How many of the dates fall in each of the last `weeks` weeks, oldest first: [{ weekStart, count }]
+function countByWeek(dateStrings, weeks) {
+  const firstMonday = firstWeekStart(weeks);
+  const result = Array.from({ length: weeks }, (_, i) => ({ weekStart: addDays(firstMonday, 7 * i), count: 0 }));
+  const weekByStart = new Map(result.map((week) => [week.weekStart, week]));
+  for (const date of dateStrings) {
+    const week = weekByStart.get(weekStart(parseDateString(date)));
+    if (week) week.count += 1;
+  }
+  return result;
+}
+
+module.exports = {
+  toDateString, today, daysAgo, parseDateString, addDays, weekStart, isDateString, firstWeekStart, countByWeek,
+};

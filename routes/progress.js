@@ -4,7 +4,8 @@
 const express = require('express');
 const db = require('../db/database');
 const { requireLogin } = require('../middleware/requireLogin');
-const { today, weekStart, addDays, parseDateString, isDateString } = require('../utils/dates');
+const { today, isDateString, firstWeekStart, countByWeek } = require('../utils/dates');
+const { readNumber } = require('../utils/validation');
 
 const router = express.Router();
 const CHART_WEEKS = 8;
@@ -25,9 +26,8 @@ const getWorkoutDatesSince = db.prepare('SELECT LogDate FROM WorkoutLog WHERE Us
 
 // Check { weightKg, logDate } from the request. Returns { error } or the cleaned values.
 function readWeightEntry(body) {
-  const weightKg = Number(body.weightKg);
-  if (body.weightKg === '' || body.weightKg === null || typeof body.weightKg === 'boolean'
-      || !Number.isFinite(weightKg) || weightKg < MIN_WEIGHT_KG || weightKg > MAX_WEIGHT_KG) {
+  const weightKg = readNumber(body.weightKg, MIN_WEIGHT_KG, MAX_WEIGHT_KG);
+  if (weightKg === null) {
     return { error: `Weight must be a number between ${MIN_WEIGHT_KG} and ${MAX_WEIGHT_KG} kg.` };
   }
   if (!isDateString(body.logDate)) return { error: 'Please choose a valid date.' };
@@ -82,15 +82,8 @@ router.delete('/weights/:id', (req, res) => {
 
 // GET /api/progress/workouts-per-week – completed workouts in each of the last 8 weeks (oldest first)
 router.get('/workouts-per-week', (req, res) => {
-  const firstMonday = addDays(weekStart(), -7 * (CHART_WEEKS - 1));
-  const weeks = Array.from({ length: CHART_WEEKS }, (_, i) => ({ weekStart: addDays(firstMonday, 7 * i), count: 0 }));
-  const weekByStart = new Map(weeks.map((week) => [week.weekStart, week]));
-
-  for (const { LogDate } of getWorkoutDatesSince.all(req.session.userId, firstMonday)) {
-    const week = weekByStart.get(weekStart(parseDateString(LogDate)));
-    if (week) week.count += 1;
-  }
-  res.json(weeks);
+  const dates = getWorkoutDatesSince.all(req.session.userId, firstWeekStart(CHART_WEEKS)).map((row) => row.LogDate);
+  res.json(countByWeek(dates, CHART_WEEKS));
 });
 
 module.exports = router;

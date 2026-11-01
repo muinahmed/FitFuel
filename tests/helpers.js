@@ -32,4 +32,11 @@ async function signedUpAgent(overrides = {}) {
   return { agent, student };
 }
 
-module.exports = { app, db, request, newStudent, signedUpAgent };
+// A supertest agent logged in as the seeded admin
+async function adminAgent() {
+  const agent = request.agent(app);
+  await agent.post('/api/admin/auth/login').send({ username: 'admin', password: 'Admin123!' }).expect(200);
+  return agent;
+}
+
+module.exports = { app, db, request, newStudent, signedUpAgent, adminAgent };

@@ -1,32 +1,18 @@
 // Accounts component – Muin Ahmed
 // Student sign up, log in and log out (FF-7, FF-8).
 const express = require('express');
-const bcrypt = require('bcrypt');
 const db = require('../db/database');
 const { today } = require('../utils/dates');
 const { cleanText, checkFullName, checkEmail, checkNewPassword } = require('../utils/validation');
+const { hashPassword, passwordMatches } = require('../utils/passwords');
+const { startSession, endSession } = require('../utils/session');
 
 const router = express.Router();
-const BCRYPT_COST = 10;
-
-// Compared against when the email is unknown, so a wrong email takes as long as a wrong password
-const DUMMY_HASH = bcrypt.hashSync('not-a-real-password', BCRYPT_COST);
 
 const findUserByEmail = db.prepare('SELECT UserID, PasswordHash, IsActive FROM Users WHERE Email = ?');
 const insertUser = db.prepare(`INSERT INTO Users (FullName, Email, PasswordHash, WeeklyBudget, IsActive, DateJoined)
                                VALUES (?, ?, ?, 0, 1, ?)`);
 const insertProfile = db.prepare("INSERT INTO UserProfile (UserID, DietType) VALUES (?, 'none')");
-
-// Start a fresh session for the student (new session ID prevents session fixation)
-function logIn(req, userId) {
-  return new Promise((resolve, reject) => {
-    req.session.regenerate((error) => {
-      if (error) return reject(error);
-      req.session.userId = userId;
-      resolve();
-    });
-  });
-}
 
 // POST /api/auth/signup – create an account and log the student in
 router.post('/signup', async (req, res) => {
@@ -38,7 +24,7 @@ router.post('/signup', async (req, res) => {
   if (error) return res.status(400).json({ error });
   if (findUserByEmail.get(email)) return res.status(409).json({ error: 'This email is already in use' });
 
-  const passwordHash = await bcrypt.hash(password, BCRYPT_COST);
+  const passwordHash = await hashPassword(password);
   let userId;
   try {
     userId = db.transaction(() => {
@@ -52,7 +38,7 @@ router.post('/signup', async (req, res) => {
     throw dbError;
   }
 
-  await logIn(req, userId);
+  await startSession(req, { userId });
   res.status(201).json({ userId, fullName, email });
 });
 
@@ -63,23 +49,21 @@ router.post('/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Please enter your email and password.' });
 
   const user = findUserByEmail.get(email);
-  const passwordMatches = await bcrypt.compare(password, user ? user.PasswordHash : DUMMY_HASH);
-  if (!user || !passwordMatches) return res.status(401).json({ error: 'Incorrect email or password' });
+  if (!(await passwordMatches(password, user && user.PasswordHash))) {
+    return res.status(401).json({ error: 'Incorrect email or password' });
+  }
   if (!user.IsActive) {
     return res.status(403).json({ error: 'Your account has been deactivated. Please contact support.' });
   }
 
-  await logIn(req, user.UserID);
+  await startSession(req, { userId: user.UserID });
   res.json({ userId: user.UserID });
 });
 
 // POST /api/auth/logout – end the session
-router.post('/logout', (req, res, next) => {
-  req.session.destroy((error) => {
-    if (error) return next(error);
-    res.clearCookie('fitfuel.sid');
-    res.json({ message: 'Logged out' });
-  });
+router.post('/logout', async (req, res) => {
+  await endSession(req, res);
+  res.json({ message: 'Logged out' });
 });
 
 module.exports = router;

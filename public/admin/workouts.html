@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workouts admin – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <div class="page-heading">
+      <h1>Workouts</h1>
+      <button type="button" class="btn" id="add-button">Add workout</button>
+    </div>
+    <div id="page-message" class="message" role="status"></div>
+
+    <section class="card" aria-labelledby="list-heading">
+      <h2 id="list-heading">All workouts</h2>
+      <form id="workout-filters" class="filter-bar filter-bar--even">
+        <div class="form-field">
+          <label for="goal">Goal</label>
+          <select id="goal" name="goal">
+            <option value="">All goals</option>
+            <option value="lose weight">Lose weight</option>
+            <option value="build muscle">Build muscle</option>
+            <option value="stay healthy">Stay healthy</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="difficulty">Difficulty</label>
+          <select id="difficulty" name="difficulty">
+            <option value="">All levels</option>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="beginner">Beginner-friendly</label>
+          <select id="beginner" name="beginner">
+            <option value="">Any</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+        </div>
+      </form>
+      <p id="result-count" class="muted" aria-live="polite"></p>
+      <div class="table-scroll">
+        <table class="data-table admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th><th scope="col">Goal</th><th scope="col">Difficulty</th><th scope="col">Minutes</th>
+              <th scope="col">Beginner</th><th scope="col">Exercises</th><th scope="col">Times logged</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="workout-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card section-heading" aria-labelledby="activity-heading">
+      <h2 id="activity-heading">Workout activity</h2>
+      <p class="muted">How many times students have completed each workout, most logged first.</p>
+      <ol id="activity-list" class="usage-list"></ol>
+    </section>
+  </main>
+
+  <dialog class="recipe-dialog form-dialog form-dialog--wide" id="workout-dialog" aria-labelledby="workout-dialog-title">
+    <button type="button" class="dialog-close" aria-label="Close" data-close-dialog>×</button>
+    <h2 id="workout-dialog-title">Add workout</h2>
+    <div class="message" role="alert"></div>
+    <form>
+      <div class="form-field">
+        <label for="workoutName">Workout name</label>
+        <input id="workoutName" name="workoutName" maxlength="60" required>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="form-goal">Goal</label>
+          <select id="form-goal" name="goal" required>
+            <option value="lose weight">Lose weight</option>
+            <option value="build muscle">Build muscle</option>
+            <option value="stay healthy">Stay healthy</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="form-difficulty">Difficulty</label>
+          <select id="form-difficulty" name="difficulty" required>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="durationMinutes">Duration (minutes)</label>
+          <input id="durationMinutes" name="durationMinutes" type="number" min="1" max="300" step="1" required>
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="check"><input type="checkbox" name="isBeginnerFriendly" id="isBeginnerFriendly"> Beginner-friendly</label>
+      </div>
+
+      <fieldset class="form-field">
+        <legend>Exercises</legend>
+        <ul class="row-list row-list--exercises" id="exercise-rows"></ul>
+        <button type="button" class="btn btn--secondary btn--small" id="add-exercise">Add exercise</button>
+      </fieldset>
+
+      <div class="button-row">
+        <button type="submit" class="btn">Save workout</button>
+        <button type="button" class="btn btn--secondary" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin/adminNav.js"></script>
+  <script src="/js/admin/forms.js"></script>
+  <script src="/js/admin/workouts.js"></script>
+</body>
+</html>

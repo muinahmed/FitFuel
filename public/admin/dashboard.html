@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin dashboard – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <h1>Admin dashboard</h1>
+    <div id="page-message" class="message" role="alert"></div>
+
+    <div class="grid grid--3">
+      <section class="card admin-card" aria-labelledby="users-heading">
+        <h2 id="users-heading">Users</h2>
+        <div class="stat-row" id="user-stats"><p class="muted">Loading…</p></div>
+        <a class="btn" href="/admin/users.html">Manage users</a>
+      </section>
+      <section class="card admin-card" aria-labelledby="recipes-heading">
+        <h2 id="recipes-heading">Recipes</h2>
+        <div id="recipe-stats"><p class="muted">Loading…</p></div>
+        <a class="btn" href="/admin/recipes.html">Manage recipes</a>
+      </section>
+      <section class="card admin-card" aria-labelledby="workouts-heading">
+        <h2 id="workouts-heading">Workouts</h2>
+        <div id="workout-stats"><p class="muted">Loading…</p></div>
+        <a class="btn" href="/admin/workouts.html">Manage workouts</a>
+      </section>
+    </div>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/admin/adminNav.js"></script>
+  <script src="/js/admin/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Recipes admin – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <div class="page-heading">
+      <h1>Recipes</h1>
+      <button type="button" class="btn" id="add-button">Add recipe</button>
+    </div>
+    <div id="page-message" class="message" role="status"></div>
+
+    <section class="card" aria-labelledby="list-heading">
+      <h2 id="list-heading">All recipes</h2>
+      <form id="recipe-filters" class="filter-bar" role="search">
+        <div class="form-field">
+          <label for="search">Search by name</label>
+          <input id="search" name="search" type="search" maxlength="80">
+        </div>
+        <div class="form-field">
+          <label for="mealType">Meal type</label>
+          <select id="mealType" name="mealType">
+            <option value="">All meals</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="diet">Diet</label>
+          <select id="diet" name="diet">
+            <option value="">All diets</option>
+            <option value="vegetarian">Vegetarian</option>
+            <option value="vegan">Vegan</option>
+            <option value="halal">Halal</option>
+          </select>
+        </div>
+      </form>
+      <p id="result-count" class="muted" aria-live="polite"></p>
+      <div class="table-scroll">
+        <table class="data-table admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th><th scope="col">Meal</th><th scope="col">Price</th>
+              <th scope="col">kcal</th><th scope="col">Diets</th><th scope="col">Times planned</th>
+              <th scope="col"><span class="visually-hidden">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="recipe-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card section-heading" aria-labelledby="usage-heading">
+      <h2 id="usage-heading">Recipe usage</h2>
+      <p class="muted">How many times each recipe appears in students' meal plans, most popular first.</p>
+      <ol id="usage-list" class="usage-list"></ol>
+    </section>
+  </main>
+
+  <dialog class="recipe-dialog form-dialog form-dialog--wide" id="recipe-dialog" aria-labelledby="recipe-dialog-title">
+    <button type="button" class="dialog-close" aria-label="Close" data-close-dialog>×</button>
+    <h2 id="recipe-dialog-title">Add recipe</h2>
+    <div class="message" role="alert"></div>
+    <form>
+      <div class="form-field">
+        <label for="recipeName">Recipe name</label>
+        <input id="recipeName" name="recipeName" maxlength="80" required>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="form-mealType">Meal type</label>
+          <select id="form-mealType" name="mealType" required>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="calories">Calories (kcal)</label>
+          <input id="calories" name="calories" type="number" min="1" max="5000" step="1" required>
+        </div>
+      </div>
+      <fieldset class="form-field">
+        <legend>Diets</legend>
+        <label class="check"><input type="checkbox" name="isVegetarian" id="isVegetarian"> Vegetarian</label>
+        <label class="check"><input type="checkbox" name="vegan" id="vegan"> Vegan</label>
+        <label class="check"><input type="checkbox" name="halal" id="halal"> Halal</label>
+      </fieldset>
+
+      <fieldset class="form-field">
+        <legend>Ingredients (for one portion)</legend>
+        <ul class="row-list" id="ingredient-rows"></ul>
+        <button type="button" class="btn btn--secondary btn--small" id="add-ingredient">Add ingredient</button>
+        <p class="hint">Price per portion (sum of costs): <strong id="price-total">0.00 kr</strong></p>
+      </fieldset>
+
+      <fieldset class="form-field">
+        <legend>Steps</legend>
+        <ol class="row-list" id="step-rows"></ol>
+        <button type="button" class="btn btn--secondary btn--small" id="add-step">Add step</button>
+      </fieldset>
+
+      <div class="button-row">
+        <button type="submit" class="btn">Save recipe</button>
+        <button type="button" class="btn btn--secondary" data-close-dialog>Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/admin/adminNav.js"></script>
+  <script src="/js/recipeDetail.js"></script>
+  <script src="/js/admin/forms.js"></script>
+  <script src="/js/admin/recipes.js"></script>
+</body>
+</html>
