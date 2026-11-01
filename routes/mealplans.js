@@ -1,6 +1,8 @@
 // Recipes & Meal Planning component – Albina Rana
-// This week's meal plan and shopping list for the logged-in student (FF-13, FF-14, FF-15).
+// Weekly meal plan and shopping list for the logged-in student (FF-13, FF-14, FF-15).
 // A week runs Monday to Sunday; each day has a lunch and a dinner.
+// Every route works on one week, chosen with ?week=this or ?week=next. Without a choice,
+// Sunday means next week (the current week is nearly over) and every other day means this week.
 const express = require('express');
 const db = require('../db/database');
 const { requireLogin } = require('../middleware/requireLogin');
@@ -10,8 +12,7 @@ const { dietCondition } = require('../utils/dietFilter');
 const router = express.Router();
 const MEAL_SLOTS = ['lunch', 'dinner'];
 const DAYS_PER_WEEK = 7;
-
-router.use(requireLogin);
+const WEEKS = ['this', 'next'];
 
 const getBudgetAndDiet = db.prepare(`
   SELECT u.WeeklyBudget AS weeklyBudget, COALESCE(p.DietType, 'none') AS dietType
@@ -40,6 +41,20 @@ const findPlannedIngredient = db.prepare(`
   WHERE e.UserID = ? AND e.PlanDate BETWEEN ? AND ? AND i.IngredientName = ?`);
 const updateCheck = db.prepare('UPDATE ShoppingCheck SET IsChecked = ? WHERE UserID = ? AND WeekStart = ? AND IngredientName = ?');
 const insertCheck = db.prepare('INSERT INTO ShoppingCheck (UserID, WeekStart, IngredientName, IsChecked) VALUES (?, ?, ?, ?)');
+
+router.use(requireLogin);
+
+// Work out which week the request is about and put it on req.week:
+// { name: 'this' | 'next', start: Monday, end: Sunday }
+router.use((req, res, next) => {
+  let name = req.query.week;
+  if (name === undefined || name === '') name = new Date().getDay() === 0 ? 'next' : 'this';
+  if (!WEEKS.includes(name)) return res.status(400).json({ error: "Week must be 'this' or 'next'." });
+
+  const start = name === 'next' ? addDays(weekStart(), DAYS_PER_WEEK) : weekStart();
+  req.week = { name, start, end: addDays(start, DAYS_PER_WEEK - 1) };
+  next();
+});
 
 // Work with money in øre (whole numbers) so sums never drift: 12.50 kr -> 1250
 function toOre(kr) {
@@ -96,17 +111,15 @@ function choosePlan(candidates, budgetOre, firstDay) {
   });
 }
 
-// This week's plan in the shape the pages use
-function buildWeekPlan(userId) {
-  const start = weekStart();
-  const end = addDays(start, DAYS_PER_WEEK - 1);
+// The week's plan in the shape the pages use
+function buildWeekPlan(userId, week) {
   const { weeklyBudget, dietType } = getBudgetAndDiet.get(userId);
-  const entries = getWeekEntries.all(userId, start, end);
+  const entries = getWeekEntries.all(userId, week.start, week.end);
 
   const days = [];
   const dayByDate = new Map();
   for (let i = 0; i < DAYS_PER_WEEK; i++) {
-    const day = { date: addDays(start, i), lunch: null, dinner: null };
+    const day = { date: addDays(week.start, i), lunch: null, dinner: null };
     days.push(day);
     dayByDate.set(day.date, day);
   }
@@ -123,16 +136,19 @@ function buildWeekPlan(userId) {
       : 'This plan costs more than your weekly budget. Generate a new plan to bring it within budget.';
   }
 
-  return { weekStart: start, weekEnd: end, weeklyBudget, dietType, hasPlan: entries.length > 0, totalCost, overBudget, warning, days };
+  return {
+    week: week.name, weekStart: week.start, weekEnd: week.end, weeklyBudget, dietType,
+    hasPlan: entries.length > 0, totalCost, overBudget, warning, days,
+  };
 }
 
-// GET /api/mealplans/current – this week's plan (hasPlan is false when nothing is planned yet)
-router.get('/current', (req, res) => {
-  res.json(buildWeekPlan(req.session.userId));
+// GET /api/mealplans?week= – the week's plan (hasPlan is false when nothing is planned yet)
+router.get('/', (req, res) => {
+  res.json(buildWeekPlan(req.session.userId, req.week));
 });
 
-// POST /api/mealplans/current/generate – create (or replace) this week's plan within the budget
-router.post('/current/generate', (req, res) => {
+// POST /api/mealplans/generate?week= – create (or replace) the week's plan within the budget
+router.post('/generate', (req, res) => {
   const userId = req.session.userId;
   const { weeklyBudget, dietType } = getBudgetAndDiet.get(userId);
   if (!(weeklyBudget > 0)) {
@@ -144,33 +160,32 @@ router.post('/current/generate', (req, res) => {
     return res.status(409).json({ error: 'There are not enough lunch and dinner recipes for your diet yet.' });
   }
 
-  const start = weekStart();
-  const plan = choosePlan(candidates, toOre(weeklyBudget), start);
+  const plan = choosePlan(candidates, toOre(weeklyBudget), req.week.start);
   db.transaction(() => {
-    deleteWeekEntries.run(userId, start, addDays(start, DAYS_PER_WEEK - 1));
+    deleteWeekEntries.run(userId, req.week.start, req.week.end);
     for (const entry of plan) insertEntry.run(userId, entry.recipeId, entry.planDate, entry.mealSlot);
   })();
 
-  res.status(201).json(buildWeekPlan(userId));
+  res.status(201).json(buildWeekPlan(userId, req.week));
 });
 
-// GET /api/mealplans/current/shopping-list – combined ingredients for this week's plan
-router.get('/current/shopping-list', (req, res) => {
-  const start = weekStart();
-  const items = getShoppingItems.all(start, req.session.userId, start, addDays(start, DAYS_PER_WEEK - 1))
+// GET /api/mealplans/shopping-list?week= – combined ingredients for the week's plan
+router.get('/shopping-list', (req, res) => {
+  const { start, end, name } = req.week;
+  const items = getShoppingItems.all(start, req.session.userId, start, end)
     .map((item) => ({ ...item, quantity: Math.round(item.quantity * 100) / 100, isChecked: Boolean(item.isChecked) }));
-  res.json({ weekStart: start, items });
+  res.json({ week: name, weekStart: start, items });
 });
 
-// PUT /api/mealplans/current/shopping-list/items – tick or untick an ingredient { ingredientName, isChecked }
-router.put('/current/shopping-list/items', (req, res) => {
+// PUT /api/mealplans/shopping-list/items?week= – tick or untick an ingredient { ingredientName, isChecked }
+router.put('/shopping-list/items', (req, res) => {
   const userId = req.session.userId;
   const { ingredientName, isChecked } = req.body;
   if (typeof ingredientName !== 'string' || !ingredientName) return res.status(400).json({ error: 'Ingredient name is required.' });
   if (typeof isChecked !== 'boolean') return res.status(400).json({ error: 'isChecked must be true or false.' });
 
-  const start = weekStart();
-  if (!findPlannedIngredient.get(userId, start, addDays(start, DAYS_PER_WEEK - 1), ingredientName)) {
+  const { start, end } = req.week;
+  if (!findPlannedIngredient.get(userId, start, end, ingredientName)) {
     return res.status(404).json({ error: 'This item is not on your shopping list.' });
   }
 

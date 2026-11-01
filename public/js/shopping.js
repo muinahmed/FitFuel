@@ -1,7 +1,13 @@
 // Shopping list page (Recipes & Meal Planning – Albina): combined ingredients with saved tick boxes.
+// Follows the week chosen with the This week / Next week switch.
 const shoppingList = document.getElementById('shopping-list');
 const progressText = document.getElementById('progress-text');
 const shoppingMessage = document.getElementById('page-message');
+const weekToggle = setUpWeekToggle(document.getElementById('week-toggle'), (week) => {
+  selectedWeek = week;
+  loadShoppingList();
+});
+let selectedWeek = weekFromAddress();
 
 // 630 -> "630", 1.5 -> "1.5", 0.333 -> "0.33"
 function formatQuantity(quantity) {
@@ -26,11 +32,17 @@ function itemHtml(item, index) {
 }
 
 async function loadShoppingList() {
+  clearMessage(shoppingMessage);
   try {
-    const list = await api('/mealplans/current/shopping-list');
+    const list = await api(`/mealplans/shopping-list${weekQuery(selectedWeek)}`);
+    selectedWeek = list.week;
+    weekToggle.select(list.week);
     document.getElementById('week-label').textContent = `Week of ${formatDate(list.weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    document.getElementById('plan-link').href = `/mealplan.html${weekQuery(list.week)}`;
+    shoppingList.innerHTML = '';
     if (list.items.length === 0) {
-      progressText.innerHTML = 'Your shopping list is empty. <a href="/mealplan.html">Generate a meal plan</a> to fill it.';
+      const weekName = list.week === 'next' ? 'next week' : 'this week';
+      progressText.innerHTML = `Your shopping list for ${weekName} is empty. <a href="/mealplan.html${weekQuery(list.week)}">Generate a meal plan</a> to fill it.`;
       return;
     }
     shoppingList.innerHTML = list.items.map(itemHtml).join('');
@@ -52,7 +64,7 @@ async function saveTick(checkbox) {
   updateProgress();
 
   try {
-    await api('/mealplans/current/shopping-list/items', {
+    await api(`/mealplans/shopping-list/items${weekQuery(selectedWeek)}`, {
       method: 'PUT',
       body: { ingredientName: checkbox.dataset.ingredient, isChecked },
     });

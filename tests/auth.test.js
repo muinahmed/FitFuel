@@ -97,6 +97,11 @@ describe('Log in and log out (FF-8)', () => {
     await agent.get('/api/users/me').expect(401);
   });
 
+  test('a request without a JSON body gets a clear 400, not a server error', async () => {
+    await request(app).post('/api/auth/login').expect(400);
+    await request(app).post('/api/auth/signup').expect(400);
+  });
+
   test('demo student from the seed data can log in', async () => {
     await request(app).post('/api/auth/login')
       .send({ email: 'emma@example.com', password: 'Student123!' }).expect(200);

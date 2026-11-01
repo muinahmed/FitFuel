@@ -160,10 +160,12 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 |---|---|---|---|
 | GET | `/api/recipes?search=&mealType=&diet=` | student | Recipe cards; search by name, filter by meal type (breakfast/lunch/dinner/snack) and diet (vegetarian/vegan/halal) |
 | GET | `/api/recipes/:id` | student | One recipe with ingredients (per portion) and steps |
-| GET | `/api/mealplans/current` | student | This week's plan (Monday–Sunday, lunch + dinner), total cost vs budget, warning if over budget |
-| POST | `/api/mealplans/current/generate` | student | Create or replace this week's plan within budget and diet |
-| GET | `/api/mealplans/current/shopping-list` | student | This week's ingredients combined by name and unit, with tick state |
-| PUT | `/api/mealplans/current/shopping-list/items` | student | Tick / untick `{ ingredientName, isChecked }` (saved in ShoppingCheck) |
+| GET | `/api/mealplans?week=` | student | The week's plan (Monday–Sunday, lunch + dinner), total cost vs budget, warning if over budget |
+| POST | `/api/mealplans/generate?week=` | student | Create or replace the week's plan within budget and diet |
+| GET | `/api/mealplans/shopping-list?week=` | student | The week's ingredients combined by name and unit, with tick state |
+| PUT | `/api/mealplans/shopping-list/items?week=` | student | Tick / untick `{ ingredientName, isChecked }` (saved in ShoppingCheck) |
+
+**Which week:** every meal plan route takes `?week=this` or `?week=next`. Without it, **Sunday means next week** (the coming Monday–Sunday) and Monday–Saturday means the current week. The meal plan and shopping list pages have a "This week / Next week" switch that defaults the same way; the choice is kept in the address, e.g. `/mealplan.html?week=next`.
 
 **How the meal plan is generated:** lunch and dinner recipes that fit the student's diet are candidates. For each of the 14 slots, a recipe is picked at random from those that still leave enough budget for the cheapest recipe in every slot left to fill, preferring recipes used least so far (variety). This keeps the week within budget whenever that is possible. If even the cheapest possible week is over budget, the cheapest recipe is used for every slot and a warning is shown. Money is calculated in øre (whole numbers) to avoid rounding errors.
 

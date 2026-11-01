@@ -340,3 +340,11 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; }
 .shopping-item input { width: 1.25rem; height: 1.25rem; accent-color: var(--green-dark); flex-shrink: 0; }
 .shopping-item__quantity { color: var(--text-muted); white-space: nowrap; }
 .shopping-item input:checked + label .shopping-item__name { text-decoration: line-through; color: var(--text-muted); }
+
+/* ---------- This week / Next week switch ---------- */
+
+.week-toggle { display: inline-flex; border: 0; padding: 4px; margin: 0 0 1rem; background: var(--card); border-radius: 999px; box-shadow: var(--shadow); }
+.week-toggle input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.week-toggle label { padding: 0.45rem 1.1rem; border-radius: 999px; font-weight: 600; color: var(--green-dark); cursor: pointer; }
+.week-toggle input:checked + label { background: var(--green-dark); color: #fff; }
+.week-toggle input:focus-visible + label { outline: 3px solid var(--lime); outline-offset: 2px; }

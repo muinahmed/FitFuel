@@ -1,8 +1,14 @@
-// Meal plan page (Recipes & Meal Planning – Albina): generate this week's plan and show cost vs budget.
+// Meal plan page (Recipes & Meal Planning – Albina): generate a week's plan and show cost vs budget.
+// The student can switch between this week and next week (see weekToggle.js).
 const generateButton = document.getElementById('generate-button');
 const planGrid = document.getElementById('plan-grid');
 const costSummary = document.getElementById('cost-summary');
 const planMessage = document.getElementById('page-message');
+const weekToggle = setUpWeekToggle(document.getElementById('week-toggle'), (week) => {
+  selectedWeek = week;
+  loadPlan();
+});
+let selectedWeek = weekFromAddress();
 let currentPlan = null;
 
 function mealHtml(label, meal) {
@@ -25,16 +31,25 @@ function dayHtml(day) {
     </section>`;
 }
 
+// "this week" / "next week" for messages
+function weekName(plan) {
+  return plan.week === 'next' ? 'next week' : 'this week';
+}
+
 function renderPlan(plan) {
   currentPlan = plan;
+  selectedWeek = plan.week;
+  weekToggle.select(plan.week);
   document.getElementById('week-label').textContent =
     `Week of ${formatDate(plan.weekStart, { day: 'numeric', month: 'long' })} – ${formatDate(plan.weekEnd, { day: 'numeric', month: 'long', year: 'numeric' })}`;
   generateButton.textContent = plan.hasPlan ? 'Generate new plan' : 'Generate plan';
-  document.getElementById('shopping-link').hidden = !plan.hasPlan;
+  const shoppingLink = document.getElementById('shopping-link');
+  shoppingLink.hidden = !plan.hasPlan;
+  shoppingLink.href = `/shopping.html${weekQuery(plan.week)}`;
 
   if (!plan.hasPlan) {
     costSummary.innerHTML = plan.weeklyBudget > 0
-      ? `No plan for this week yet. Your budget is <strong>${formatKr(plan.weeklyBudget)}</strong> – press "Generate plan" to get started.`
+      ? `No plan for ${weekName(plan)} yet. Your budget is <strong>${formatKr(plan.weeklyBudget)}</strong> – press "Generate plan" to get started.`
       : 'Set your weekly food budget on your <a href="/profile.html">profile</a>, then generate a plan.';
     planGrid.innerHTML = '';
     return;
@@ -47,8 +62,9 @@ function renderPlan(plan) {
 }
 
 async function loadPlan() {
+  clearMessage(planMessage);
   try {
-    renderPlan(await api('/mealplans/current'));
+    renderPlan(await api(`/mealplans${weekQuery(selectedWeek)}`));
   } catch (error) {
     costSummary.textContent = '';
     showMessage(planMessage, error.message);
@@ -56,13 +72,13 @@ async function loadPlan() {
 }
 
 async function generatePlan() {
-  if (currentPlan && currentPlan.hasPlan && !window.confirm("Replace this week's meal plan with a new one?")) return;
+  if (currentPlan && currentPlan.hasPlan && !window.confirm(`Replace the meal plan for ${weekName(currentPlan)} with a new one?`)) return;
 
   clearMessage(planMessage);
   generateButton.disabled = true;
   try {
-    renderPlan(await api('/mealplans/current/generate', { method: 'POST' }));
-    if (!currentPlan.warning) showMessage(planMessage, 'Your new meal plan is ready.', 'success');
+    renderPlan(await api(`/mealplans/generate${weekQuery(selectedWeek)}`, { method: 'POST' }));
+    if (!currentPlan.warning) showMessage(planMessage, `Your meal plan for ${weekName(currentPlan)} is ready.`, 'success');
   } catch (error) {
     showMessage(planMessage, error.message);
   } finally {

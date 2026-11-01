@@ -23,6 +23,11 @@ if (!sessionSecret) {
 }
 
 app.use(express.json());
+// Express 5 leaves req.body undefined when there is no JSON body; routes expect an object
+app.use((req, res, next) => {
+  req.body ??= {};
+  next();
+});
 app.use(session({
   name: 'fitfuel.sid',
   secret: sessionSecret,

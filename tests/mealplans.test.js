@@ -33,26 +33,26 @@ describe('Week dates', () => {
 
 describe('Weekly meal plan (FF-13)', () => {
   test('needs a login', async () => {
-    await request(app).get('/api/mealplans/current').expect(401);
-    await request(app).post('/api/mealplans/current/generate').expect(401);
+    await request(app).get('/api/mealplans?week=this').expect(401);
+    await request(app).post('/api/mealplans/generate?week=this').expect(401);
   });
 
   test('a new student has no plan yet', async () => {
     const agent = await studentWith(400);
-    const res = await agent.get('/api/mealplans/current').expect(200);
+    const res = await agent.get('/api/mealplans?week=this').expect(200);
     assert.equal(res.body.hasPlan, false);
     assert.equal(res.body.days.length, 7);
   });
 
   test('needs a weekly budget first', async () => {
     const { agent } = await signedUpAgent();
-    const res = await agent.post('/api/mealplans/current/generate').expect(400);
+    const res = await agent.post('/api/mealplans/generate?week=this').expect(400);
     assert.equal(res.body.error, 'Please set your weekly food budget on your profile first.');
   });
 
   test('creates 7 days x lunch + dinner for this week, starting Monday', async () => {
     const agent = await studentWith(500);
-    const res = await agent.post('/api/mealplans/current/generate').expect(201);
+    const res = await agent.post('/api/mealplans/generate?week=this').expect(201);
 
     const monday = weekStart();
     assert.equal(res.body.weekStart, monday);
@@ -69,7 +69,7 @@ describe('Weekly meal plan (FF-13)', () => {
   test('total cost stays within the budget and is shown against it', async () => {
     const agent = await studentWith(300, 'vegetarian');
     for (let attempt = 0; attempt < 10; attempt++) {
-      const { body } = await agent.post('/api/mealplans/current/generate').expect(201);
+      const { body } = await agent.post('/api/mealplans/generate?week=this').expect(201);
       const sum = plannedMeals(body).reduce((total, meal) => total + meal.pricePerPortion, 0);
       assert.ok(Math.abs(body.totalCost - sum) < 0.001);
       assert.ok(body.totalCost <= 300, `plan cost ${body.totalCost}`);
@@ -82,7 +82,7 @@ describe('Weekly meal plan (FF-13)', () => {
   test('respects the diet type', async () => {
     for (const diet of ['vegetarian', 'vegan', 'halal']) {
       const agent = await studentWith(600, diet);
-      const { body } = await agent.post('/api/mealplans/current/generate').expect(201);
+      const { body } = await agent.post('/api/mealplans/generate?week=this').expect(201);
       for (const meal of plannedMeals(body)) {
         if (diet === 'vegetarian') assert.equal(recipeById(meal.recipeId).IsVegetarian, 1);
         else assert.ok(hasTag(meal.recipeId, diet), `${meal.recipeName} should be ${diet}`);
@@ -92,7 +92,7 @@ describe('Weekly meal plan (FF-13)', () => {
 
   test('uses the cheapest valid plan with a warning when the budget is too low', async () => {
     const agent = await studentWith(50, 'vegan');
-    const { body } = await agent.post('/api/mealplans/current/generate').expect(201);
+    const { body } = await agent.post('/api/mealplans/generate?week=this').expect(201);
 
     const cheapest = (mealType) => db.prepare(`SELECT MIN(r.PricePerPortion) AS price FROM Recipes r
       JOIN RecipeDietTag t ON t.RecipeID = r.RecipeID AND t.DietType = 'vegan' WHERE r.MealType = ?`).get(mealType).price;
@@ -103,8 +103,8 @@ describe('Weekly meal plan (FF-13)', () => {
 
   test('regenerating replaces the week instead of adding to it', async () => {
     const agent = await studentWith(450);
-    await agent.post('/api/mealplans/current/generate').expect(201);
-    await agent.post('/api/mealplans/current/generate').expect(201);
+    await agent.post('/api/mealplans/generate?week=this').expect(201);
+    await agent.post('/api/mealplans/generate?week=this').expect(201);
 
     const userId = db.prepare('SELECT UserID FROM Users ORDER BY UserID DESC LIMIT 1').get().UserID;
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM MealPlanEntry WHERE UserID = ?').get(userId).n, 14);
@@ -112,9 +112,9 @@ describe('Weekly meal plan (FF-13)', () => {
 
   test('students only see their own plan', async () => {
     const planner = await studentWith(450);
-    await planner.post('/api/mealplans/current/generate').expect(201);
+    await planner.post('/api/mealplans/generate?week=this').expect(201);
     const other = await studentWith(450);
-    const res = await other.get('/api/mealplans/current').expect(200);
+    const res = await other.get('/api/mealplans?week=this').expect(200);
     assert.equal(res.body.hasPlan, false);
   });
 });
@@ -122,8 +122,8 @@ describe('Weekly meal plan (FF-13)', () => {
 describe('Shopping list (FF-14)', () => {
   test('combines ingredients by name and unit with summed quantities', async () => {
     const agent = await studentWith(450);
-    const { body: plan } = await agent.post('/api/mealplans/current/generate').expect(201);
-    const { body: list } = await agent.get('/api/mealplans/current/shopping-list').expect(200);
+    const { body: plan } = await agent.post('/api/mealplans/generate?week=this').expect(201);
+    const { body: list } = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
 
     // Work out the expected totals straight from the recipes in the plan
     const expected = new Map();
@@ -145,7 +145,7 @@ describe('Shopping list (FF-14)', () => {
 
   test('is empty when there is no plan', async () => {
     const agent = await studentWith(450);
-    const res = await agent.get('/api/mealplans/current/shopping-list').expect(200);
+    const res = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
     assert.deepEqual(res.body.items, []);
   });
 });
@@ -153,25 +153,95 @@ describe('Shopping list (FF-14)', () => {
 describe('Tick off shopping items (FF-15)', () => {
   test('a ticked item stays ticked after reloading, and can be unticked', async () => {
     const agent = await studentWith(450);
-    await agent.post('/api/mealplans/current/generate').expect(201);
-    const { body: list } = await agent.get('/api/mealplans/current/shopping-list').expect(200);
+    await agent.post('/api/mealplans/generate?week=this').expect(201);
+    const { body: list } = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
     const { ingredientName } = list.items[0];
 
-    await agent.put('/api/mealplans/current/shopping-list/items').send({ ingredientName, isChecked: true }).expect(200);
-    let reloaded = await agent.get('/api/mealplans/current/shopping-list').expect(200);
+    await agent.put('/api/mealplans/shopping-list/items?week=this').send({ ingredientName, isChecked: true }).expect(200);
+    let reloaded = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
     assert.equal(reloaded.body.items.find((item) => item.ingredientName === ingredientName).isChecked, true);
 
-    await agent.put('/api/mealplans/current/shopping-list/items').send({ ingredientName, isChecked: false }).expect(200);
-    reloaded = await agent.get('/api/mealplans/current/shopping-list').expect(200);
+    await agent.put('/api/mealplans/shopping-list/items?week=this').send({ ingredientName, isChecked: false }).expect(200);
+    reloaded = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
     assert.equal(reloaded.body.items.find((item) => item.ingredientName === ingredientName).isChecked, false);
   });
 
   test('rejects items not on the list and invalid values', async () => {
     const agent = await studentWith(450);
-    await agent.post('/api/mealplans/current/generate').expect(201);
-    await agent.put('/api/mealplans/current/shopping-list/items')
+    await agent.post('/api/mealplans/generate?week=this').expect(201);
+    await agent.put('/api/mealplans/shopping-list/items?week=this')
       .send({ ingredientName: 'Caviar', isChecked: true }).expect(404);
-    await agent.put('/api/mealplans/current/shopping-list/items')
+    await agent.put('/api/mealplans/shopping-list/items?week=this')
       .send({ ingredientName: 'Onion', isChecked: 'yes' }).expect(400);
+  });
+});
+
+describe('Choosing this week or next week', () => {
+  // Pretend "now" is the given local date and time (only Date is faked)
+  const pretendNow = (t, ...dateParts) => t.mock.timers.enable({ apis: ['Date'], now: new Date(...dateParts) });
+
+  test('on Sunday the plan is for next week (the coming Monday to Sunday)', async (t) => {
+    pretendNow(t, 2026, 10, 1, 12); // Sunday 1 November 2026
+    const agent = await studentWith(450);
+
+    const { body: shown } = await agent.get('/api/mealplans').expect(200);
+    assert.equal(shown.week, 'next');
+    assert.equal(shown.weekStart, '2026-11-02');
+
+    const { body: plan } = await agent.post('/api/mealplans/generate').expect(201);
+    assert.equal(plan.week, 'next');
+    assert.deepEqual([plan.days[0].date, plan.days[6].date], ['2026-11-02', '2026-11-08']);
+    assert.ok(plannedMeals(plan).every(Boolean));
+  });
+
+  test('Monday to Saturday the plan is for the current week', async (t) => {
+    for (const [day, label] of [[2, 'Monday'], [4, 'Wednesday'], [7, 'Saturday']]) {
+      pretendNow(t, 2026, 10, day, 12);
+      const agent = await studentWith(450);
+      const { body: plan } = await agent.post('/api/mealplans/generate').expect(201);
+      assert.equal(plan.week, 'this', label);
+      assert.equal(plan.weekStart, '2026-11-02', label);
+      t.mock.timers.reset();
+    }
+  });
+
+  test('the student can choose either week on any day', async (t) => {
+    pretendNow(t, 2026, 10, 1, 12); // Sunday
+    const agent = await studentWith(450);
+    const { body: thisWeek } = await agent.post('/api/mealplans/generate?week=this').expect(201);
+    assert.equal(thisWeek.weekStart, '2026-10-26');
+    t.mock.timers.reset();
+
+    pretendNow(t, 2026, 10, 4, 12); // Wednesday
+    const { body: nextWeek } = await agent.post('/api/mealplans/generate?week=next').expect(201);
+    assert.equal(nextWeek.weekStart, '2026-11-09');
+  });
+
+  test('the two weeks have separate plans, shopping lists and spending', async () => {
+    const agent = await studentWith(450);
+    const { body: nextPlan } = await agent.post('/api/mealplans/generate?week=next').expect(201);
+
+    const thisPlan = await agent.get('/api/mealplans?week=this').expect(200);
+    assert.equal(thisPlan.body.hasPlan, false);
+    assert.equal(thisPlan.body.totalCost, 0);
+    assert.ok(nextPlan.totalCost > 0);
+
+    const thisList = await agent.get('/api/mealplans/shopping-list?week=this').expect(200);
+    const nextList = await agent.get('/api/mealplans/shopping-list?week=next').expect(200);
+    assert.deepEqual(thisList.body.items, []);
+    assert.ok(nextList.body.items.length > 0);
+
+    // A tick on next week's list is saved for next week only
+    const { ingredientName } = nextList.body.items[0];
+    await agent.put('/api/mealplans/shopping-list/items?week=next').send({ ingredientName, isChecked: true }).expect(200);
+    await agent.put('/api/mealplans/shopping-list/items?week=this').send({ ingredientName, isChecked: true }).expect(404);
+    const reloaded = await agent.get('/api/mealplans/shopping-list?week=next').expect(200);
+    assert.equal(reloaded.body.items.find((item) => item.ingredientName === ingredientName).isChecked, true);
+  });
+
+  test('rejects an unknown week', async () => {
+    const agent = await studentWith(450);
+    await agent.get('/api/mealplans?week=last').expect(400);
+    await agent.post('/api/mealplans/generate?week=someday').expect(400);
   });
 });

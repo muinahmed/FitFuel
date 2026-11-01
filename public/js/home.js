@@ -12,7 +12,7 @@ function greetingForNow() {
 async function loadTodaysMeals() {
   const container = document.getElementById('todays-meals');
   try {
-    const plan = await api('/mealplans/current');
+    const plan = await api('/mealplans?week=this');
     const today = plan.days.find((day) => day.date === todayString());
     if (!today || (!today.lunch && !today.dinner)) {
       container.innerHTML = '<p class="placeholder">No meals planned for today.</p><a href="/mealplan.html">Plan this week\'s meals →</a>';
