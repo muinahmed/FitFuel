@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profile – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <h1>Your profile</h1>
+    <div id="page-message" class="message" role="status"></div>
+
+    <div class="grid grid--2">
+      <section class="card" aria-labelledby="goal-heading">
+        <h2 id="goal-heading">Goal and diet</h2>
+        <div id="goal-message" class="message" role="status"></div>
+        <form id="goal-form">
+          <div class="form-field">
+            <label for="goal">Fitness goal</label>
+            <select id="goal" name="goal" required>
+              <option value="">Choose a goal</option>
+              <option value="lose weight">Lose weight</option>
+              <option value="build muscle">Build muscle</option>
+              <option value="stay healthy">Stay healthy</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="dietType">Diet type</label>
+            <select id="dietType" name="dietType" required>
+              <option value="none">No restrictions</option>
+              <option value="vegetarian">Vegetarian</option>
+              <option value="vegan">Vegan</option>
+              <option value="halal">Halal</option>
+            </select>
+          </div>
+          <button type="submit" class="btn">Save goal and diet</button>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="budget-heading">
+        <h2 id="budget-heading">Weekly food budget</h2>
+        <div id="budget-message" class="message" role="status"></div>
+        <form id="budget-form">
+          <div class="form-field">
+            <label for="weeklyBudget">Budget per week</label>
+            <div class="input-with-unit">
+              <input id="weeklyBudget" name="weeklyBudget" type="number" min="0.01" max="9999.99" step="0.01"
+                     inputmode="decimal" aria-describedby="budget-hint" required>
+              <span>kr</span>
+            </div>
+            <p id="budget-hint" class="hint">How much you can spend on food each week.</p>
+          </div>
+          <button type="submit" class="btn">Save budget</button>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="details-heading">
+        <h2 id="details-heading">Account details</h2>
+        <div id="details-message" class="message" role="status"></div>
+        <form id="details-form">
+          <div class="form-field">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" maxlength="50" autocomplete="name" required>
+          </div>
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
+          </div>
+          <button type="submit" class="btn">Save details</button>
+        </form>
+      </section>
+
+      <section class="card" aria-labelledby="password-heading">
+        <h2 id="password-heading">Change password</h2>
+        <div id="password-message" class="message" role="status"></div>
+        <form id="password-form">
+          <div class="form-field">
+            <label for="currentPassword">Current password</label>
+            <input id="currentPassword" name="currentPassword" type="password" autocomplete="current-password" required>
+          </div>
+          <div class="form-field">
+            <label for="newPassword">New password</label>
+            <input id="newPassword" name="newPassword" type="password" minlength="8" autocomplete="new-password"
+                   aria-describedby="new-password-hint" required>
+            <p id="new-password-hint" class="hint">At least 8 characters.</p>
+          </div>
+          <div class="form-field">
+            <label for="confirmPassword">Confirm new password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="btn">Change password</button>
+        </form>
+      </section>
+    </div>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script src="/js/profile.js"></script>
+</body>
+</html>

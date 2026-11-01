@@ -1,0 +1,35 @@
+// Test setup shared by all test files: a fresh in-memory database with demo data.
+// Each test file runs in its own process, so each gets its own database.
+process.env.DB_PATH = ':memory:';
+process.env.SESSION_SECRET = 'test-secret';
+
+const request = require('supertest');
+const db = require('../db/database');
+const { seedDatabase } = require('../db/seed');
+
+seedDatabase(db);
+const app = require('../server');
+
+let emailCounter = 0;
+
+// A unique, valid sign-up body
+function newStudent(overrides = {}) {
+  emailCounter += 1;
+  return {
+    fullName: 'Test Student',
+    email: `student${emailCounter}@test.dk`,
+    password: 'Password1!',
+    confirmPassword: 'Password1!',
+    ...overrides,
+  };
+}
+
+// Sign up a new student and return a logged-in supertest agent plus the sign-up details
+async function signedUpAgent(overrides = {}) {
+  const agent = request.agent(app);
+  const student = newStudent(overrides);
+  await agent.post('/api/auth/signup').send(student).expect(201);
+  return { agent, student };
+}
+
+module.exports = { app, db, request, newStudent, signedUpAgent };

@@ -1,0 +1,26 @@
+{
+  "name": "fitfuel",
+  "version": "1.0.0",
+  "description": "FitFuel – Eat Healthy. Stay Active. Spend Wisely. A budget meal planning and workout app for university students.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node db/seed.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "author": "The Agile Trio (Muin Ahmed, Albina Rana, Priyanka Pant)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  }
+}

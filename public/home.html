@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home – FitFuel</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-header"></header>
+  <main id="main" class="container">
+    <h1 id="greeting">Welcome to FitFuel</h1>
+    <div id="page-message" class="message" role="status"></div>
+
+    <div class="grid grid--3">
+      <section class="card" aria-labelledby="budget-heading">
+        <h2 id="budget-heading">This week's budget</h2>
+        <p class="budget-figure" id="budget-figure">–</p>
+        <p class="muted" id="budget-note"></p>
+      </section>
+      <section class="card" aria-labelledby="meals-heading">
+        <h2 id="meals-heading">Today's meals</h2>
+        <p class="placeholder">No meals planned yet. Weekly meal plans are coming soon.</p>
+      </section>
+      <section class="card" aria-labelledby="workout-heading">
+        <h2 id="workout-heading">Next workout</h2>
+        <p class="placeholder">No workout planned yet. Workout plans are coming soon.</p>
+      </section>
+    </div>
+
+    <h2 class="section-heading">Quick links</h2>
+    <nav class="quick-links" aria-label="Quick links">
+      <a class="quick-link" href="/mealplan.html"><span aria-hidden="true">🥗</span>Meal plan</a>
+      <a class="quick-link" href="/shopping.html"><span aria-hidden="true">🛒</span>Shopping list</a>
+      <a class="quick-link" href="/workouts.html"><span aria-hidden="true">💪</span>Workouts</a>
+      <a class="quick-link" href="/progress.html"><span aria-hidden="true">📈</span>Progress</a>
+    </nav>
+  </main>
+  <script src="/js/api.js"></script>
+  <script src="/js/nav.js"></script>
+  <script src="/js/home.js"></script>
+</body>
+</html>
