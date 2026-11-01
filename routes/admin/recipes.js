@@ -7,6 +7,7 @@ const { requireAdmin } = require('../../middleware/requireAdmin');
 const { MEAL_TYPES, readRecipeFilters, listRecipes, getRecipeDetail } = require('../../db/recipeQueries');
 const { cleanText, readNumber } = require('../../utils/validation');
 const { weekStart, parseDateString } = require('../../utils/dates');
+const { readImagePath, deleteUnusedImages } = require('../../utils/uploads');
 
 const router = express.Router();
 const DIET_TAGS = ['vegan', 'halal'];
@@ -28,6 +29,9 @@ const deleteSteps = db.prepare('DELETE FROM RecipeStep WHERE RecipeID = ?');
 const deleteTags = db.prepare('DELETE FROM RecipeDietTag WHERE RecipeID = ?');
 const getCurrentPlanUses = db.prepare('SELECT UserID, PlanDate FROM MealPlanEntry WHERE RecipeID = ? AND PlanDate >= ?');
 const deleteRecipeEntries = db.prepare('DELETE FROM MealPlanEntry WHERE RecipeID = ?');
+const getImagePath = db.prepare('SELECT ImagePath FROM RecipeImage WHERE RecipeID = ?');
+const deleteImage = db.prepare('DELETE FROM RecipeImage WHERE RecipeID = ?');
+const insertImage = db.prepare('INSERT INTO RecipeImage (RecipeID, ImagePath) VALUES (?, ?)');
 const getUsage = db.prepare(`
   SELECT r.RecipeID AS recipeId, r.RecipeName AS recipeName, r.MealType AS mealType, COUNT(e.EntryID) AS timesPlanned
   FROM Recipes r LEFT JOIN MealPlanEntry e ON e.RecipeID = r.RecipeID
@@ -75,11 +79,15 @@ function readRecipeInput(body) {
   const pricePerPortion = Math.round(ingredients.reduce((sum, item) => sum + item.cost * 100, 0)) / 100;
   if (pricePerPortion <= 0 || pricePerPortion > 999.99) return { error: 'The ingredient costs must add up to between 0.01 and 999.99 kr.' };
 
-  return { recipeName, mealType: body.mealType, calories, isVegetarian: body.isVegetarian, dietTags, ingredients, steps, pricePerPortion };
+  const imagePath = readImagePath(body.imagePath);
+  if (imagePath === undefined) return { error: 'The photo was not found. Upload it again.' };
+
+  return { recipeName, mealType: body.mealType, calories, isVegetarian: body.isVegetarian, dietTags, ingredients, steps, pricePerPortion, imagePath };
 }
 
-// Write ingredients, steps and tags for a recipe (after any old ones are removed)
+// Write ingredients, steps, tags and photo for a recipe (after any old ones are removed)
 function insertRecipeParts(recipeId, recipe) {
+  if (recipe.imagePath) insertImage.run(recipeId, recipe.imagePath);
   for (const item of recipe.ingredients) insertIngredient.run(recipeId, item.ingredientName, item.quantity, item.unit, item.cost);
   recipe.steps.forEach((instruction, index) => insertStep.run(recipeId, index + 1, instruction));
   for (const tag of recipe.dietTags) insertTag.run(recipeId, tag);
@@ -150,14 +158,17 @@ router.put('/:id', (req, res) => {
   const recipe = readRecipeInput(req.body);
   if (recipe.error) return res.status(400).json({ error: recipe.error });
 
+  const oldImage = getImagePath.get(recipeId);
   db.transaction(() => {
     updateRecipe.run(recipe.recipeName, recipe.mealType, recipe.pricePerPortion, recipe.calories,
       recipe.isVegetarian ? 1 : 0, recipeId);
     deleteIngredients.run(recipeId);
     deleteSteps.run(recipeId);
     deleteTags.run(recipeId);
+    deleteImage.run(recipeId);
     insertRecipeParts(recipeId, recipe);
   })();
+  if (oldImage && oldImage.ImagePath !== recipe.imagePath) deleteUnusedImages([oldImage.ImagePath]);
   res.json(getRecipeDetail(recipeId));
 });
 
@@ -180,10 +191,12 @@ router.delete('/:id', (req, res) => {
     });
   }
 
+  const oldImage = getImagePath.get(recipeId);
   db.transaction(() => {
     deleteRecipeEntries.run(recipeId);
     deleteRecipe.run(recipeId);
   })();
+  if (oldImage) deleteUnusedImages([oldImage.ImagePath]);
   res.status(204).end();
 });
 

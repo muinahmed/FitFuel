@@ -14,6 +14,7 @@ try {
 const db = require('./db/database');
 const { requireLoginPage } = require('./middleware/requireLogin');
 const { requireAdminPage } = require('./middleware/requireAdmin');
+const { UPLOAD_DIR } = require('./utils/uploads');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/admin/auth', require('./routes/admin/auth'));
 app.use('/api/admin/users', require('./routes/admin/users'));
 app.use('/api/admin/recipes', require('./routes/admin/recipes'));
 app.use('/api/admin/workouts', require('./routes/admin/workouts'));
+app.use('/api/admin/uploads', require('./routes/admin/uploads'));
 
 // Unknown API paths get a JSON error instead of an HTML page
 app.use('/api', (req, res) => {
@@ -64,6 +66,7 @@ app.use(STUDENT_PAGES, requireLoginPage);
 const ADMIN_PAGES = ['/admin/dashboard.html', '/admin/users.html', '/admin/recipes.html', '/admin/workouts.html'];
 app.use(ADMIN_PAGES, requireAdminPage);
 app.get(['/admin', '/admin/'], (req, res) => res.redirect('/admin/dashboard.html'));
+app.use('/uploads', express.static(UPLOAD_DIR)); // uploaded recipe and exercise photos
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Any other address: a friendly "page not found" page
@@ -73,6 +76,9 @@ app.use((req, res) => {
 
 // ---------- Errors ----------
 app.use((error, req, res, next) => {
+  if (error.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'The image is too big. Choose one under 2 MB.' });
+  }
   if (error.type === 'entity.parse.failed') {
     return res.status(400).json({ error: 'The request body is not valid JSON.' });
   }

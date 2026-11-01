@@ -7,9 +7,11 @@ const { containsPattern } = require('../utils/search');
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 const RECIPE_COLUMNS = `r.RecipeID AS recipeId, r.RecipeName AS recipeName, r.MealType AS mealType,
-  r.PricePerPortion AS pricePerPortion, r.Calories AS calories, r.IsVegetarian AS isVegetarian`;
+  r.PricePerPortion AS pricePerPortion, r.Calories AS calories, r.IsVegetarian AS isVegetarian, ri.ImagePath AS imageUrl`;
+// Recipes with their optional photo (imageUrl is null when there is none)
+const RECIPES_WITH_IMAGE = 'Recipes r LEFT JOIN RecipeImage ri ON ri.RecipeID = r.RecipeID';
 
-const getRecipe = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM Recipes r WHERE r.RecipeID = ?`);
+const getRecipe = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM ${RECIPES_WITH_IMAGE} WHERE r.RecipeID = ?`);
 const getAllTags = db.prepare('SELECT RecipeID, DietType FROM RecipeDietTag ORDER BY DietType');
 const getTags = db.prepare('SELECT DietType FROM RecipeDietTag WHERE RecipeID = ? ORDER BY DietType');
 const getIngredients = db.prepare(`SELECT IngredientName AS ingredientName, Quantity AS quantity, Unit AS unit, Cost AS cost
@@ -17,7 +19,7 @@ const getIngredients = db.prepare(`SELECT IngredientName AS ingredientName, Quan
 const getSteps = db.prepare(`SELECT StepNumber AS stepNumber, Instruction AS instruction
                              FROM RecipeStep WHERE RecipeID = ? ORDER BY StepNumber`);
 const getFavouriteIds = db.prepare('SELECT RecipeID FROM FavouriteRecipe WHERE UserID = ?');
-const getFavourites = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM Recipes r
+const getFavourites = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM ${RECIPES_WITH_IMAGE}
                                   JOIN FavouriteRecipe f ON f.RecipeID = r.RecipeID
                                   WHERE f.UserID = ? ORDER BY f.DateSaved DESC, r.RecipeName`);
 
@@ -65,7 +67,7 @@ function listRecipes({ search, mealType, diet }, { favouritesOf } = {}) {
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-  const rows = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM Recipes r ${where} ORDER BY r.RecipeName`).all(...params);
+  const rows = db.prepare(`SELECT ${RECIPE_COLUMNS} FROM ${RECIPES_WITH_IMAGE} ${where} ORDER BY r.RecipeName`).all(...params);
 
   const tagsByRecipe = allDietTags();
   const recipes = rows.map((row) => toRecipe(row, tagsByRecipe.get(row.recipeId) || []));

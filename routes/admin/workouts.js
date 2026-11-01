@@ -5,6 +5,7 @@ const express = require('express');
 const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
 const { cleanText, readNumber, readWebAddress } = require('../../utils/validation');
+const { readImagePath, deleteUnusedImages } = require('../../utils/uploads');
 
 const router = express.Router();
 const GOALS = ['lose weight', 'build muscle', 'stay healthy'];
@@ -17,15 +18,16 @@ const WORKOUT_COLUMNS = `w.WorkoutID AS workoutId, w.WorkoutName AS workoutName,
   w.DurationMinutes AS durationMinutes, w.IsBeginnerFriendly AS isBeginnerFriendly, w.DateCreated AS dateCreated`;
 const getWorkout = db.prepare(`SELECT ${WORKOUT_COLUMNS} FROM Workouts w WHERE w.WorkoutID = ?`);
 const getExercises = db.prepare(`SELECT ExerciseName AS exerciseName, Sets AS sets, Reps AS reps,
-                                        Instructions AS instructions, MediaURL AS mediaUrl
+                                        Instructions AS instructions, MediaURL AS mediaUrl, ImagePath AS imagePath
                                  FROM WorkoutExercise WHERE WorkoutID = ? ORDER BY ExerciseID`);
 const insertWorkout = db.prepare(`INSERT INTO Workouts (WorkoutName, Goal, Difficulty, DurationMinutes, IsBeginnerFriendly)
                                   VALUES (?, ?, ?, ?, ?)`);
 const updateWorkout = db.prepare(`UPDATE Workouts SET WorkoutName = ?, Goal = ?, Difficulty = ?, DurationMinutes = ?, IsBeginnerFriendly = ?
                                   WHERE WorkoutID = ?`);
 const deleteWorkout = db.prepare('DELETE FROM Workouts WHERE WorkoutID = ?');
-const insertExercise = db.prepare(`INSERT INTO WorkoutExercise (WorkoutID, ExerciseName, Sets, Reps, Instructions, MediaURL)
-                                   VALUES (?, ?, ?, ?, ?, ?)`);
+const insertExercise = db.prepare(`INSERT INTO WorkoutExercise (WorkoutID, ExerciseName, Sets, Reps, Instructions, MediaURL, ImagePath)
+                                   VALUES (?, ?, ?, ?, ?, ?, ?)`);
+const getExerciseImages = db.prepare('SELECT ImagePath FROM WorkoutExercise WHERE WorkoutID = ? AND ImagePath IS NOT NULL');
 const deleteExercises = db.prepare('DELETE FROM WorkoutExercise WHERE WorkoutID = ?');
 const getActivity = db.prepare(`
   SELECT w.WorkoutID AS workoutId, w.WorkoutName AS workoutName, w.Goal AS goal,
@@ -71,14 +73,18 @@ function readWorkoutInput(body) {
     if (reps === null) return { error: `${row}: reps must be a whole number from 1 to 500.` };
     if (instructions.length > 255) return { error: `${row}: instructions can be up to 255 characters.` };
     if (mediaText && (!mediaUrl || mediaUrl.length > 255)) return { error: `${row}: the video link must be a web address starting with http:// or https://.` };
-    exercises.push({ exerciseName, sets, reps, instructions: instructions || null, mediaUrl });
+    const imagePath = readImagePath(item && item.imagePath);
+    if (imagePath === undefined) return { error: `${row}: the photo was not found. Upload it again.` };
+    exercises.push({ exerciseName, sets, reps, instructions: instructions || null, mediaUrl, imagePath });
   }
 
   return { workoutName, goal: body.goal, difficulty: body.difficulty, durationMinutes, isBeginnerFriendly: body.isBeginnerFriendly, exercises };
 }
 
 function insertExercises(workoutId, exercises) {
-  for (const item of exercises) insertExercise.run(workoutId, item.exerciseName, item.sets, item.reps, item.instructions, item.mediaUrl);
+  for (const item of exercises) {
+    insertExercise.run(workoutId, item.exerciseName, item.sets, item.reps, item.instructions, item.mediaUrl, item.imagePath);
+  }
 }
 
 // Jira: FF-43 Filter workouts
@@ -142,12 +148,14 @@ router.put('/:id', (req, res) => {
   const workout = readWorkoutInput(req.body);
   if (workout.error) return res.status(400).json({ error: workout.error });
 
+  const oldImages = getExerciseImages.all(workoutId).map((row) => row.ImagePath);
   db.transaction(() => {
     updateWorkout.run(workout.workoutName, workout.goal, workout.difficulty, workout.durationMinutes,
       workout.isBeginnerFriendly ? 1 : 0, workoutId);
     deleteExercises.run(workoutId);
     insertExercises(workoutId, workout.exercises);
   })();
+  deleteUnusedImages(oldImages); // photos removed from exercises in this edit
   res.json(getWorkoutDetail(workoutId));
 });
 
@@ -156,7 +164,9 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   const workoutId = Number(req.params.id);
   if (!getWorkoutDetail(workoutId)) return res.status(404).json({ error: 'Workout not found.' });
+  const oldImages = getExerciseImages.all(workoutId).map((row) => row.ImagePath);
   deleteWorkout.run(workoutId);
+  deleteUnusedImages(oldImages);
   res.status(204).end();
 });
 

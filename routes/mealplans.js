@@ -21,8 +21,9 @@ const getBudgetAndDiet = db.prepare(`
   WHERE u.UserID = ?`);
 const getWeekEntries = db.prepare(`
   SELECT e.EntryID AS entryId, e.PlanDate AS planDate, e.MealSlot AS mealSlot, r.RecipeID AS recipeId,
-         r.RecipeName AS recipeName, r.PricePerPortion AS pricePerPortion, r.Calories AS calories
+         r.RecipeName AS recipeName, r.PricePerPortion AS pricePerPortion, r.Calories AS calories, ri.ImagePath AS imageUrl
   FROM MealPlanEntry e JOIN Recipes r ON r.RecipeID = e.RecipeID
+  LEFT JOIN RecipeImage ri ON ri.RecipeID = r.RecipeID
   WHERE e.UserID = ? AND e.PlanDate BETWEEN ? AND ?`);
 const deleteWeekEntries = db.prepare('DELETE FROM MealPlanEntry WHERE UserID = ? AND PlanDate BETWEEN ? AND ?');
 const insertEntry = db.prepare('INSERT INTO MealPlanEntry (UserID, RecipeID, PlanDate, MealSlot) VALUES (?, ?, ?, ?)');

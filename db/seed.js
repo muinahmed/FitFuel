@@ -9,7 +9,7 @@ const { daysAgo } = require('../utils/dates');
 // Child tables first so foreign keys never block a drop
 const ALL_TABLES = [
   'ShoppingCheck', 'FavouriteRecipe', 'WeightLog', 'WorkoutExercise', 'RecipeStep',
-  'RecipeDietTag', 'RecipeIngredient', 'UserProfile', 'WorkoutLog', 'MealPlanEntry',
+  'RecipeDietTag', 'RecipeImage', 'RecipeIngredient', 'UserProfile', 'WorkoutLog', 'MealPlanEntry',
   'Admins', 'Workouts', 'Recipes', 'Users',
 ];
 

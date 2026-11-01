@@ -910,3 +910,30 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ---------- Photos ---------- */
+
+.food-tile--photo { overflow: hidden; background: var(--tint); }
+.food-tile--photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.exercise__image { display: block; width: 100%; max-height: 190px; object-fit: cover; border-radius: var(--radius-input); margin-bottom: 0.5rem; }
+.name-with-tile { display: inline-flex; align-items: center; gap: 0.6rem; }
+.name-with-tile .food-tile { width: 2.25rem; height: 2.25rem; font-size: 1.15rem; border-radius: 10px; }
+
+.photo-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 0.9rem; }
+.photo-picker__preview {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-input);
+  border: 2px dashed #B9CBBD;
+  background: var(--tint);
+  color: var(--text-muted);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.photo-picker__preview img { width: 100%; height: 100%; object-fit: cover; }
+.photo-picker__choose { cursor: pointer; }
+.photo-picker__choose:focus-within { outline: 3px solid var(--lime); outline-offset: 2px; }
+.photo-picker--busy .photo-picker__preview { opacity: 0.5; }
+.row-list--exercises .photo-picker__preview { width: 3rem; height: 3rem; }

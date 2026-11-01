@@ -11,8 +11,9 @@ const exerciseRows = setUpRowList(document.getElementById('exercise-rows'), (ite
   <input data-field="sets" aria-label="Sets" placeholder="Sets" type="number" min="1" max="20" step="1" required value="${attr(item.sets)}">
   <input data-field="reps" aria-label="Reps" placeholder="Reps" type="number" min="1" max="500" step="1" required value="${attr(item.reps)}">
   <input data-field="instructions" class="row-wide" aria-label="Instructions" placeholder="Short instructions" maxlength="255" value="${attr(item.instructions)}">
-  <input data-field="mediaUrl" class="row-wide" aria-label="Image or video link (optional)" placeholder="https://… (optional video link)" type="url" maxlength="255" value="${attr(item.mediaUrl)}">`,
-document.getElementById('add-exercise'));
+  <input data-field="mediaUrl" class="row-wide" aria-label="Image or video link (optional)" placeholder="https://… (optional video link)" type="url" maxlength="255" value="${attr(item.mediaUrl)}">
+  <div class="row-wide">${photoPickerHtml(item.imagePath, 'exercise photo')}</div>`,
+document.getElementById('add-exercise'), 'Remove exercise');
 
 function workoutRowHtml(workout) {
   return `
@@ -108,6 +109,7 @@ workoutTable.addEventListener('click', async (event) => {
   }
 });
 
+setUpPhotoPickers(workoutDialog, workoutDialog.querySelector('.message'));
 document.getElementById('add-button').addEventListener('click', () => openWorkoutForm(null));
 workoutFilters.addEventListener('change', () => loadWorkouts().catch((error) => showMessage(workoutsMessage, error.message)));
 

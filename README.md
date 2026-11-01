@@ -32,7 +32,8 @@ All styling is in `public/css/style.css`, built on the tokens at the top of the 
 - **Type:** system fonts only (works offline). Headings use the system's rounded/display face at heavy weight; numbers use tabular digits so amounts line up.
 - **Shape:** a radius hierarchy instead of one radius everywhere – hero 28px, cards 20px, chips and inputs 12–14px, buttons pill-shaped.
 - **Icons:** hand-drawn line icons in `public/js/icons.js` – `icon('flame')` in scripts or `<span data-icon="flame"></span>` in HTML. Price, calories and minutes are shown as icon + value instead of "A · B" text.
-- **Recipe pictures:** recipes have no photos, so each gets a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`).
+- **Recipe pictures:** a recipe shows its photo when an admin has uploaded one; otherwise it gets a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`). Exercises can have a photo too.
+- **Favicon:** the emblem from the logo (`public/favicon.ico`, `public/img/favicon-192.png`, `public/img/apple-touch-icon.png`).
 - **Phones:** a bottom tab bar for the five main sections on student pages, and a Menu button for everything (including Profile and Log out). Admin pages have a dark header so admins always know where they are.
 
 ## Install, run, seed and test
@@ -51,7 +52,7 @@ npm start                # http://localhost:3000
 | `npm run seed` | Deletes all data and recreates the database with demo data. |
 | `npm test` | Runs all API tests against a fresh in-memory database (your real data is not touched). |
 
-The database file is `db/fitfuel.db` (ignored by git). Without a `.env` file the app still starts, but uses a random session secret, so everyone is logged out on restart.
+The database file is `db/fitfuel.db` and uploaded photos are saved in `public/uploads/` (both ignored by git). Older databases get new columns automatically on start-up (see `db/database.js`). Without a `.env` file the app still starts, but uses a random session secret, so everyone is logged out on restart.
 
 ## Demo accounts
 
@@ -139,7 +140,8 @@ These supporting tables are needed for the features. No columns were added to th
 | **RecipeIngredient** | RecipeIngredientID, RecipeID, IngredientName VARCHAR(60), Quantity DECIMAL(6,2), Unit VARCHAR(15), Cost DECIMAL(5,2) | FK RecipeID. Quantities and costs are for **one portion**; seeded PricePerPortion = sum of ingredient costs. |
 | **RecipeDietTag** | RecipeID, DietType VARCHAR(20) | Composite PK (RecipeID, DietType). Values vegan / halal; vegetarian uses Recipes.IsVegetarian. |
 | **RecipeStep** | StepID, RecipeID, StepNumber INTEGER, Instruction VARCHAR(255) | FK RecipeID |
-| **WorkoutExercise** | ExerciseID, WorkoutID, ExerciseName VARCHAR(60), Sets INTEGER, Reps INTEGER, Instructions VARCHAR(255), MediaURL VARCHAR(255) | FK WorkoutID |
+| **RecipeImage** | RecipeID, ImagePath VARCHAR(255) | PK and FK RecipeID (one optional photo per recipe; cascade delete). Recipes without a row show an emoji. |
+| **WorkoutExercise** | ExerciseID, WorkoutID, ExerciseName VARCHAR(60), Sets INTEGER, Reps INTEGER, Instructions VARCHAR(255), MediaURL VARCHAR(255), **ImagePath VARCHAR(255)** | FK WorkoutID. MediaURL is the "watch how" video link; ImagePath is an optional uploaded photo. |
 | **WeightLog** | WeightLogID, UserID, WeightKg DECIMAL(5,2), LogDate DATE | FK UserID |
 | **FavouriteRecipe** | UserID, RecipeID, DateSaved DATE | Composite PK (UserID, RecipeID) |
 | **ShoppingCheck** | UserID, WeekStart DATE, IngredientName VARCHAR(60), IsChecked BOOLEAN | Composite PK (UserID, WeekStart, IngredientName) |
@@ -227,6 +229,7 @@ Separate admin login using the Admins table (session key `adminId`, never set fo
 | POST | `/api/admin/workouts` | Priyanka | FF-40 | Add a workout with exercises (video links must start with http:// or https://) |
 | PUT | `/api/admin/workouts/:id` | Priyanka | FF-41 | Edit a workout (replaces exercises) |
 | DELETE | `/api/admin/workouts/:id` | Priyanka | FF-42 | Delete a workout, its exercises and its logs |
+| POST | `/api/admin/uploads` | Albina, Priyanka | – | Upload a recipe or exercise photo (the image itself as the body; JPG, PNG or WebP checked by content, max 2 MB). Returns `{ path }`, which the recipe or workout form then saves as `imagePath`. Replaced or removed photos are deleted from disk. |
 
 ## User stories and Jira tickets
 

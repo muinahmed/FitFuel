@@ -29,7 +29,8 @@ const getWorkoutsForGoal = db.prepare(`
   FROM Workouts WHERE Goal = ?
   ORDER BY IsBeginnerFriendly DESC, CASE Difficulty WHEN 'easy' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, WorkoutID`);
 const getExercises = db.prepare(`
-  SELECT ExerciseName AS exerciseName, Sets AS sets, Reps AS reps, Instructions AS instructions, MediaURL AS mediaUrl
+  SELECT ExerciseName AS exerciseName, Sets AS sets, Reps AS reps, Instructions AS instructions, MediaURL AS mediaUrl,
+         ImagePath AS imageUrl
   FROM WorkoutExercise WHERE WorkoutID = ? ORDER BY ExerciseID`);
 const findWorkout = db.prepare('SELECT WorkoutName FROM Workouts WHERE WorkoutID = ?');
 const getWeekLogCounts = db.prepare(`

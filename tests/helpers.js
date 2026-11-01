@@ -2,6 +2,8 @@
 // Each test file runs in its own process, so each gets its own database.
 process.env.DB_PATH = ':memory:';
 process.env.SESSION_SECRET = 'test-secret';
+// Uploaded photos go to a temporary folder, never into public/uploads
+process.env.UPLOAD_DIR = require('fs').mkdtempSync(require('path').join(require('os').tmpdir(), 'fitfuel-uploads-'));
 
 const request = require('supertest');
 const db = require('../db/database');

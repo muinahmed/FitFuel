@@ -10,8 +10,12 @@ function exerciseHtml(exercise) {
     ? `<a href="${escapeHtml(exercise.mediaUrl)}" target="_blank" rel="noopener noreferrer"
           aria-label="Watch how to do ${escapeHtml(exercise.exerciseName)} (opens in a new tab)">${icon('video', 16)}Watch how</a>`
     : '';
+  const photo = exercise.imageUrl
+    ? `<img class="exercise__image" src="${escapeHtml(exercise.imageUrl)}" alt="How to do ${escapeHtml(exercise.exerciseName)}" loading="lazy">`
+    : '';
   return `
     <li class="exercise">
+      ${photo}
       <div class="exercise__heading">
         <strong>${escapeHtml(exercise.exerciseName)}</strong>
         <span class="exercise__sets">${exercise.sets} × ${exercise.reps}<span class="visually-hidden"> (sets × reps)</span></span>

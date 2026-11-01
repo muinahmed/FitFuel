@@ -21,10 +21,15 @@ function recipeEmoji(recipe) {
   return match ? match[1] : MEAL_TYPE_EMOJI[recipe.mealType] || '🍽️';
 }
 
-// Emoji tile tinted by meal type. size: '' (small) or 'large' (card / dialog header)
+// The recipe's photo, or an emoji tile tinted by meal type when it has none.
+// size: '' (small) or 'large' (card / dialog header). Decorative: the recipe name is always next to it.
 function foodTileHtml(recipe, size = '') {
+  const sizeClass = size ? ` food-tile--${size}` : '';
+  if (recipe.imageUrl) {
+    return `<span class="food-tile food-tile--photo${sizeClass}" aria-hidden="true"><img src="${escapeHtml(recipe.imageUrl)}" alt="" loading="lazy"></span>`;
+  }
   const mealType = recipe.mealType || 'dinner';
-  return `<span class="food-tile food-tile--${mealType}${size ? ` food-tile--${size}` : ''}" aria-hidden="true">${recipeEmoji(recipe)}</span>`;
+  return `<span class="food-tile food-tile--${mealType}${sizeClass}" aria-hidden="true">${recipeEmoji(recipe)}</span>`;
 }
 
 // Price and calories as icon + value pairs

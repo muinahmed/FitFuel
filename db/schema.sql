@@ -85,6 +85,12 @@ CREATE TABLE IF NOT EXISTS RecipeIngredient (
   Cost               DECIMAL(5,2) NOT NULL
 );
 
+-- Optional photo for a recipe (path of an uploaded image; recipes without one show an emoji)
+CREATE TABLE IF NOT EXISTS RecipeImage (
+  RecipeID  INTEGER      NOT NULL PRIMARY KEY REFERENCES Recipes(RecipeID) ON DELETE CASCADE,
+  ImagePath VARCHAR(255) NOT NULL
+);
+
 -- Vegan / halal tags (vegetarian uses Recipes.IsVegetarian)
 CREATE TABLE IF NOT EXISTS RecipeDietTag (
   RecipeID INTEGER     NOT NULL REFERENCES Recipes(RecipeID) ON DELETE CASCADE,
@@ -106,7 +112,8 @@ CREATE TABLE IF NOT EXISTS WorkoutExercise (
   Sets         INTEGER      NOT NULL,
   Reps         INTEGER      NOT NULL,
   Instructions VARCHAR(255),
-  MediaURL     VARCHAR(255)
+  MediaURL     VARCHAR(255),
+  ImagePath    VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS WeightLog (

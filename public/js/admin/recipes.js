@@ -36,7 +36,7 @@ document.getElementById('isVegetarian').addEventListener('change', (event) => {
 function recipeRowHtml(recipe) {
   return `
     <tr data-id="${recipe.recipeId}">
-      <td>${escapeHtml(recipe.recipeName)}</td>
+      <td><span class="name-with-tile">${foodTileHtml(recipe)}${escapeHtml(recipe.recipeName)}</span></td>
       <td class="capitalise">${escapeHtml(recipe.mealType)}</td>
       <td>${formatKr(recipe.pricePerPortion)}</td>
       <td>${recipe.calories}</td>
@@ -86,6 +86,7 @@ function openRecipeForm(recipe) {
   stepRows.clear();
   (recipe ? recipe.steps : [{}, {}, {}]).forEach((step) => stepRows.add(step));
   updatePriceTotal();
+  document.getElementById('recipe-photo').innerHTML = photoPickerHtml(recipe ? recipe.imageUrl : '');
 
   openFormDialog(recipeFormDialog, async () => {
     const body = {
@@ -96,6 +97,7 @@ function openRecipeForm(recipe) {
       dietTags: ['vegan', 'halal'].filter((tag) => form[tag].checked),
       ingredients: ingredientRows.read(),
       steps: stepRows.read().map((step) => step.instruction),
+      imagePath: document.querySelector('#recipe-photo [data-field="imagePath"]').value,
     };
     const saved = recipe
       ? await api(`/admin/recipes/${recipe.recipeId}`, { method: 'PUT', body })
@@ -138,6 +140,7 @@ recipeTable.addEventListener('click', async (event) => {
   }
 });
 
+setUpPhotoPickers(recipeFormDialog, recipeFormDialog.querySelector('.message'));
 document.getElementById('add-button').addEventListener('click', () => openRecipeForm(null));
 recipeFilters.addEventListener('submit', (event) => event.preventDefault());
 recipeFilters.addEventListener('change', () => loadRecipes().catch((error) => showMessage(recipesMessage, error.message)));
