@@ -37,6 +37,25 @@ function formatKr(amount) {
   return `${Number(amount).toFixed(2)} kr`;
 }
 
+// Make text safe to put inside innerHTML
+function escapeHtml(text) {
+  return String(text).replace(/[&<>"']/g, (character) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]
+  ));
+}
+
+// Today's date as 'YYYY-MM-DD' in local time (same format as the API)
+function todayString() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+// 'YYYY-MM-DD' -> e.g. "Monday 3 Nov" (options can change the format)
+function formatDate(dateString, options = { weekday: 'long', day: 'numeric', month: 'short' }) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-GB', options);
+}
+
 // Disable a form's submit button while a request runs, then re-enable it
 async function withBusyButton(form, task) {
   const button = form.querySelector('button[type="submit"]');

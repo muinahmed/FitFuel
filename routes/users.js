@@ -6,11 +6,11 @@ const bcrypt = require('bcrypt');
 const db = require('../db/database');
 const { requireLogin } = require('../middleware/requireLogin');
 const { cleanText, checkFullName, checkEmail, checkNewPassword, checkPositiveAmount } = require('../utils/validation');
+const { DIET_TYPES } = require('../utils/dietFilter');
 
 const router = express.Router();
 const BCRYPT_COST = 10;
 const GOALS = ['lose weight', 'build muscle', 'stay healthy'];
-const DIET_TYPES = ['none', 'vegetarian', 'vegan', 'halal'];
 
 router.use(requireLogin);
 

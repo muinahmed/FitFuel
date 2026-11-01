@@ -8,6 +8,26 @@ function greetingForNow() {
   return 'Good evening';
 }
 
+// Today's lunch and dinner from this week's meal plan
+async function loadTodaysMeals() {
+  const container = document.getElementById('todays-meals');
+  try {
+    const plan = await api('/mealplans/current');
+    const today = plan.days.find((day) => day.date === todayString());
+    if (!today || (!today.lunch && !today.dinner)) {
+      container.innerHTML = '<p class="placeholder">No meals planned for today.</p><a href="/mealplan.html">Plan this week\'s meals →</a>';
+      return;
+    }
+    const mealLine = (label, meal) => (meal
+      ? `<li><strong>${label}:</strong> ${escapeHtml(meal.recipeName)} <span class="muted">(${formatKr(meal.pricePerPortion)})</span></li>`
+      : '');
+    container.innerHTML = `<ul class="plain-list">${mealLine('Lunch', today.lunch)}${mealLine('Dinner', today.dinner)}</ul>
+      <a href="/mealplan.html">See the whole week →</a>`;
+  } catch (error) {
+    container.innerHTML = `<p class="placeholder">${escapeHtml(error.message)}</p>`;
+  }
+}
+
 async function loadHome() {
   const pageMessage = document.getElementById('page-message');
   try {
@@ -31,3 +51,4 @@ async function loadHome() {
 }
 
 loadHome();
+loadTodaysMeals();

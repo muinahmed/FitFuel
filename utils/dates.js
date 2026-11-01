@@ -21,4 +21,25 @@ function daysAgo(days) {
   return toDateString(date);
 }
 
-module.exports = { toDateString, today, daysAgo };
+// 'YYYY-MM-DD' -> Date at local midnight
+function parseDateString(dateString) {
+  const [year, month, day] = dateString.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
+// Add (or subtract) days to a 'YYYY-MM-DD' string
+function addDays(dateString, days) {
+  const date = parseDateString(dateString);
+  date.setDate(date.getDate() + days);
+  return toDateString(date);
+}
+
+// Monday of the week that contains the given date, as 'YYYY-MM-DD'
+function weekStart(date = new Date()) {
+  const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const daysSinceMonday = (monday.getDay() + 6) % 7; // getDay(): Sunday = 0
+  monday.setDate(monday.getDate() - daysSinceMonday);
+  return toDateString(monday);
+}
+
+module.exports = { toDateString, today, daysAgo, addDays, weekStart };

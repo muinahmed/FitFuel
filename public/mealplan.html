@@ -10,12 +10,30 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="site-header"></header>
   <main id="main" class="container">
-    <h1>Meal plan</h1>
-    <div class="card">
-      <p class="placeholder">Your weekly meal plan within your budget. Coming in Sprint 2.</p>
+    <div class="page-heading">
+      <div>
+        <h1>Meal plan</h1>
+        <p class="muted" id="week-label"></p>
+      </div>
+      <div class="button-row">
+        <button type="button" class="btn" id="generate-button">Generate plan</button>
+        <a class="btn btn--secondary" href="/recipes.html">Browse recipes</a>
+      </div>
     </div>
+
+    <div id="page-message" class="message" role="alert"></div>
+
+    <section class="card plan-summary" aria-labelledby="summary-heading">
+      <h2 id="summary-heading" class="visually-hidden">Cost this week</h2>
+      <p id="cost-summary" class="muted">Loading your plan…</p>
+      <a href="/shopping.html" id="shopping-link" hidden>View shopping list →</a>
+    </section>
+
+    <div id="plan-grid" class="plan-grid"></div>
   </main>
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
+  <script src="/js/recipeDetail.js"></script>
+  <script src="/js/mealplan.js"></script>
 </body>
 </html>

@@ -11,7 +11,7 @@ University Agile team project by **The Agile Trio**.
 | Component | Owner | Back-end files |
 |---|---|---|
 | Accounts (sign up, login, profile, navigation, users admin) | **Muin Ahmed** (Scrum Master) | `routes/auth.js`, `routes/users.js`, `middleware/requireLogin.js` |
-| Recipes & Meal Planning (recipes, meal plan, shopping list, recipes admin) | **Albina Rana** | `routes/recipes.js`, `routes/mealplans.js` (Sprint 2) |
+| Recipes & Meal Planning (recipes, meal plan, shopping list, recipes admin) | **Albina Rana** | `routes/recipes.js`, `routes/mealplans.js`, `utils/dietFilter.js` |
 | Workouts & Progress (workouts, logs, weight, charts, workouts admin) | **Priyanka Pant** | `routes/workouts.js`, `routes/progress.js` (Sprint 3) |
 
 Shared: `server.js`, `db/`, `utils/`, `public/css/style.css`, `public/js/api.js`, `public/js/nav.js`.
@@ -156,7 +156,16 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 
 ### Recipes & Meal Planning – Albina
 
-Coming in Sprint 2.
+| Method | Path | Login | Description |
+|---|---|---|---|
+| GET | `/api/recipes?search=&mealType=&diet=` | student | Recipe cards; search by name, filter by meal type (breakfast/lunch/dinner/snack) and diet (vegetarian/vegan/halal) |
+| GET | `/api/recipes/:id` | student | One recipe with ingredients (per portion) and steps |
+| GET | `/api/mealplans/current` | student | This week's plan (Monday–Sunday, lunch + dinner), total cost vs budget, warning if over budget |
+| POST | `/api/mealplans/current/generate` | student | Create or replace this week's plan within budget and diet |
+| GET | `/api/mealplans/current/shopping-list` | student | This week's ingredients combined by name and unit, with tick state |
+| PUT | `/api/mealplans/current/shopping-list/items` | student | Tick / untick `{ ingredientName, isChecked }` (saved in ShoppingCheck) |
+
+**How the meal plan is generated:** lunch and dinner recipes that fit the student's diet are candidates. For each of the 14 slots, a recipe is picked at random from those that still leave enough budget for the cheapest recipe in every slot left to fill, preferring recipes used least so far (variety). This keeps the week within budget whenever that is possible. If even the cheapest possible week is over budget, the cheapest recipe is used for every slot and a warning is shown. Money is calculated in øre (whole numbers) to avoid rounding errors.
 
 ### Workouts & Progress – Priyanka
 
@@ -176,7 +185,10 @@ Coming in Phase 4.
 | 1 | FF-10 | Weekly food budget | Done |
 | 1 | FF-11 | Navigation (shared header, active page, login redirect) | Done |
 | 1 | – | Edit profile / change password, home page, landing page | Done (supporting tasks, no separate Jira key) |
-| 2 | FF-12 to FF-15 | Browse recipes, weekly meal plan, shopping list, tick off items | Planned |
+| 2 | FF-12 | Browse recipes (search, filters, detail with ingredients and steps) | Done |
+| 2 | FF-13 | Weekly meal plan within budget and diet | Done |
+| 2 | FF-14 | Shopping list (combined ingredients) | Done |
+| 2 | FF-15 | Tick off shopping items | Done |
 | 3 | FF-16 to FF-20 | Workout plan, log a workout, exercise instructions, log weight, progress chart | Planned |
 | 4 | FF-21 to FF-26 | Phone layout, spending vs budget, swap a meal, shopping list cost, favourites, weekly reminder | Planned |
 
@@ -190,6 +202,6 @@ db/seed.js             Demo data (npm run seed)
 routes/                One file per component area (header comment names the owner)
 middleware/            requireLogin (and requireAdmin in Phase 4)
 utils/                 Shared date and validation helpers
-public/                HTML pages, css/style.css, js/ (one file per page + api.js and nav.js), img/
+public/                HTML pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js), img/
 tests/                 API tests (node:test + supertest)
 ```
