@@ -1,5 +1,6 @@
 // Accounts component – Muin Ahmed
 // Admin log in and log out, using the Admins table (separate from student accounts).
+// Jira epic FF-27 (Admin back end).
 const express = require('express');
 const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
@@ -12,6 +13,7 @@ const router = express.Router();
 const findAdminByUsername = db.prepare('SELECT AdminID, PasswordHash FROM Admins WHERE Username = ?');
 const getAdminName = db.prepare('SELECT Username AS username FROM Admins WHERE AdminID = ?');
 
+// Jira: FF-28 Admin login
 // POST /api/admin/auth/login – { username, password }
 router.post('/login', async (req, res) => {
   const username = cleanText(req.body.username);
@@ -27,12 +29,14 @@ router.post('/login', async (req, res) => {
   res.json({ username });
 });
 
+// Jira: FF-28 Admin login
 // POST /api/admin/auth/logout
 router.post('/logout', async (req, res) => {
   await endSession(req, res);
   res.json({ message: 'Logged out' });
 });
 
+// Jira: FF-28 Admin login
 // GET /api/admin/auth/me – the logged-in admin's username
 router.get('/me', requireAdmin, (req, res) => {
   res.json(getAdminName.get(req.session.adminId));

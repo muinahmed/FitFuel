@@ -190,32 +190,32 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 
 **How the workout plan works:** training days are spread over the week (2 = Mon/Thu, 3 = Mon/Wed/Fri, 4 = Mon/Tue/Thu/Fri, 5 = Mon–Fri). Each day gets a workout for the student's goal, beginner-friendly and easier workouts first, cycling round if there are more days than workouts. A session counts as done when that workout has been logged this week. The charts on the Progress page are drawn with the `<canvas>` API in `public/js/charts.js` (no chart library) and have hover tooltips and a table view.
 
-### Admin
+### Admin (Jira epic FF-27)
 
-Separate admin login using the Admins table (session key `adminId`, never set for students). Every `/api/admin/*` route uses `requireAdmin` and answers 401 to logged-out visitors and students; the admin pages (`/admin/dashboard.html`, `users.html`, `recipes.html`, `workouts.html`) redirect them to `/admin/login.html`.
+Separate admin login using the Admins table (session key `adminId`, never set for students). Every `/api/admin/*` route uses `requireAdmin` and answers 401 to logged-out visitors and students; the admin pages (`/admin/dashboard.html`, `users.html`, `recipes.html`, `workouts.html`) redirect them to `/admin/login.html`. Each admin route has its Jira key in a comment above it.
 
-| Method | Path | Owner | Description |
-|---|---|---|---|
-| POST | `/api/admin/auth/login` | Muin | Admin log in `{ username, password }` |
-| POST | `/api/admin/auth/logout` | Muin | Admin log out |
-| GET | `/api/admin/auth/me` | Muin | Logged-in admin's username |
-| GET | `/api/admin/users?search=&sort=&order=` | Muin | View, search (name or email) and sort (`name` or `dateJoined`, `asc`/`desc`) all users – no passwords |
-| GET | `/api/admin/users/stats` | Muin | Total, active, inactive, new sign-ups per week (last 8 weeks, from DateJoined) |
-| PUT | `/api/admin/users/:id` | Muin | Edit `{ fullName, email, weeklyBudget }` (passwords cannot be seen or changed) |
-| PUT | `/api/admin/users/:id/status` | Muin | Deactivate / reactivate `{ isActive }` (a deactivated student is logged out at once) |
-| DELETE | `/api/admin/users/:id` | Muin | Delete the user and, by cascade, all their data |
-| GET | `/api/admin/recipes?search=&mealType=&diet=` | Albina | Search / filter recipes, with how often each was planned |
-| GET | `/api/admin/recipes/usage` | Albina | Recipe usage: MealPlanEntry count per recipe, most popular first |
-| GET | `/api/admin/recipes/:id` | Albina | One recipe with ingredients and steps |
-| POST | `/api/admin/recipes` | Albina | Add a recipe with ingredients and steps (price = sum of ingredient costs) |
-| PUT | `/api/admin/recipes/:id` | Albina | Edit a recipe (replaces ingredients, steps and diet tags) |
-| DELETE | `/api/admin/recipes/:id` | Albina | Delete; **warns with 409** if the recipe is in this week's or a future meal plan – `?force=true` deletes anyway |
-| GET | `/api/admin/workouts?goal=&difficulty=&beginner=` | Priyanka | Filter workouts, with exercise and log counts |
-| GET | `/api/admin/workouts/activity` | Priyanka | Workout activity: completed WorkoutLog count per workout, most logged first |
-| GET | `/api/admin/workouts/:id` | Priyanka | One workout with exercises |
-| POST | `/api/admin/workouts` | Priyanka | Add a workout with exercises (video links must start with http:// or https://) |
-| PUT | `/api/admin/workouts/:id` | Priyanka | Edit a workout (replaces exercises) |
-| DELETE | `/api/admin/workouts/:id` | Priyanka | Delete a workout, its exercises and its logs |
+| Method | Path | Owner | Jira | Description |
+|---|---|---|---|---|
+| POST | `/api/admin/auth/login` | Muin | FF-28 | Admin log in `{ username, password }` |
+| POST | `/api/admin/auth/logout` | Muin | FF-28 | Admin log out |
+| GET | `/api/admin/auth/me` | Muin | FF-28 | Logged-in admin's username |
+| GET | `/api/admin/users?search=&sort=&order=` | Muin | FF-29, FF-30 | View all users, sorted by `name` or `dateJoined` (`asc`/`desc`), and search by name or email – no passwords |
+| GET | `/api/admin/users/stats` | Muin | FF-34 | Total, active, inactive, new sign-ups per week (last 8 weeks, from DateJoined) |
+| PUT | `/api/admin/users/:id` | Muin | FF-31 | Edit `{ fullName, email, weeklyBudget }` (passwords cannot be seen or changed; budget 0 = not set) |
+| PUT | `/api/admin/users/:id/status` | Muin | FF-32 | Deactivate / reactivate `{ isActive }` (a deactivated student is logged out at once) |
+| DELETE | `/api/admin/users/:id` | Muin | FF-33 | Delete the user and, by cascade, all their data |
+| GET | `/api/admin/recipes?search=&mealType=&diet=` | Albina | FF-38 | Search / filter recipes, with how often each was planned |
+| GET | `/api/admin/recipes/usage` | Albina | FF-39 | Recipe usage: MealPlanEntry count per recipe, most popular first |
+| GET | `/api/admin/recipes/:id` | Albina | FF-36 | One recipe with ingredients and steps (for the edit form) |
+| POST | `/api/admin/recipes` | Albina | FF-35 | Add a recipe with ingredients and steps (price = sum of ingredient costs) |
+| PUT | `/api/admin/recipes/:id` | Albina | FF-36 | Edit a recipe (replaces ingredients, steps and diet tags) |
+| DELETE | `/api/admin/recipes/:id` | Albina | FF-37 | Delete; **warns with 409** saying how many meal plans (this week or later) use the recipe – `?force=true` deletes it and removes its MealPlanEntry rows |
+| GET | `/api/admin/workouts?goal=&difficulty=&beginner=` | Priyanka | FF-43 | Filter workouts, with exercise and log counts |
+| GET | `/api/admin/workouts/activity` | Priyanka | FF-44 | Workout activity: completed WorkoutLog count per workout, most logged first |
+| GET | `/api/admin/workouts/:id` | Priyanka | FF-41 | One workout with exercises (for the edit form) |
+| POST | `/api/admin/workouts` | Priyanka | FF-40 | Add a workout with exercises (video links must start with http:// or https://) |
+| PUT | `/api/admin/workouts/:id` | Priyanka | FF-41 | Edit a workout (replaces exercises) |
+| DELETE | `/api/admin/workouts/:id` | Priyanka | FF-42 | Delete a workout, its exercises and its logs |
 
 ## User stories and Jira tickets
 
@@ -237,7 +237,23 @@ Separate admin login using the Admins table (session key `adminId`, never set fo
 | 3 | FF-19 | Log weight (add, edit, delete) | Done |
 | 3 | FF-20 | Progress chart (weight line chart, workouts-per-week bar chart, canvas) | Done |
 | 3 | – | Meal plan: This week / Next week (Sunday plans next week) | Done (change request) |
-| Admin | – | Admin back end: users, recipes and workouts admin, dashboard | Done (Phase 4) |
+| Admin (epic FF-27) | FF-28 | Admin login (separate login, admin-only pages and API) | Done |
+| Admin (epic FF-27) | FF-29 | View all users (sortable by name / date joined) | Done |
+| Admin (epic FF-27) | FF-30 | Search users (name or email) | Done |
+| Admin (epic FF-27) | FF-31 | Edit user details (name, email, budget; no passwords) | Done |
+| Admin (epic FF-27) | FF-32 | Deactivate / reactivate account | Done |
+| Admin (epic FF-27) | FF-33 | Delete user (confirmation, cascades related records) | Done |
+| Admin (epic FF-27) | FF-34 | User statistics (total, active, inactive, sign-ups per week) | Done |
+| Admin (epic FF-27) | FF-35 | Add recipe (with ingredients and steps) | Done |
+| Admin (epic FF-27) | FF-36 | Edit recipe | Done |
+| Admin (epic FF-27) | FF-37 | Delete recipe (warns how many current meal plans use it) | Done |
+| Admin (epic FF-27) | FF-38 | Search / filter recipes | Done |
+| Admin (epic FF-27) | FF-39 | View recipe usage (most popular first) | Done |
+| Admin (epic FF-27) | FF-40 | Add workout (with exercises) | Done |
+| Admin (epic FF-27) | FF-41 | Edit workout | Done |
+| Admin (epic FF-27) | FF-42 | Delete workout | Done |
+| Admin (epic FF-27) | FF-43 | Filter workouts (goal, difficulty, beginner-friendly) | Done |
+| Admin (epic FF-27) | FF-44 | View workout activity (most logged first) | Done |
 | 4 | FF-21 | Phone layout (mobile-first, Menu button on small screens, every page fits 375 px) | Done |
 | 4 | FF-22 | Weekly spending vs budget (meter on Home and Meal plan, warning colour when over) | Done |
 | 4 | FF-23 | Swap a meal (same meal type and diet, stays within budget, shopping list follows) | Done |

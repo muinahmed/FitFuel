@@ -1,5 +1,6 @@
 // Recipes & Meal Planning component – Albina Rana
 // Recipes admin: add, edit, delete, search/filter recipes and view recipe usage.
+// Jira epic FF-27 (Admin back end).
 const express = require('express');
 const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
@@ -103,6 +104,7 @@ function existingRecipeId(req) {
   return getRecipeDetail(recipeId) ? recipeId : null;
 }
 
+// Jira: FF-38 Search / filter recipes
 // GET /api/admin/recipes?search=&mealType=&diet= – all recipes with how often each was planned
 router.get('/', (req, res) => {
   const filters = readRecipeFilters(req.query);
@@ -111,11 +113,13 @@ router.get('/', (req, res) => {
   res.json(listRecipes(filters).map((recipe) => ({ ...recipe, timesPlanned: timesPlanned.get(recipe.recipeId) || 0 })));
 });
 
+// Jira: FF-39 View recipe usage
 // GET /api/admin/recipes/usage – how many times each recipe appears in meal plans, most popular first
 router.get('/usage', (req, res) => {
   res.json(getUsage.all());
 });
 
+// Jira: FF-36 Edit recipe
 // GET /api/admin/recipes/:id – one recipe with ingredients and steps (for the edit form)
 router.get('/:id', (req, res) => {
   const recipe = getRecipeDetail(Number(req.params.id));
@@ -123,6 +127,7 @@ router.get('/:id', (req, res) => {
   res.json(recipe);
 });
 
+// Jira: FF-35 Add recipe
 // POST /api/admin/recipes – add a recipe with ingredients and steps
 router.post('/', (req, res) => {
   const recipe = readRecipeInput(req.body);
@@ -137,6 +142,7 @@ router.post('/', (req, res) => {
   res.status(201).json(getRecipeDetail(recipeId));
 });
 
+// Jira: FF-36 Edit recipe
 // PUT /api/admin/recipes/:id – replace a recipe's details, ingredients, steps and tags
 router.put('/:id', (req, res) => {
   const recipeId = existingRecipeId(req);
@@ -155,6 +161,7 @@ router.put('/:id', (req, res) => {
   res.json(getRecipeDetail(recipeId));
 });
 
+// Jira: FF-37 Delete recipe
 // DELETE /api/admin/recipes/:id[?force=true]
 // If students have the recipe in this week's or a future meal plan, answer 409 saying how many
 // meal plans use it, so the admin can confirm. ?force=true deletes it anyway: its MealPlanEntry

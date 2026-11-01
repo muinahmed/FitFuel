@@ -1,5 +1,6 @@
 // Workouts & Progress component – Priyanka Pant
 // Workouts admin: add, edit, delete and filter workouts, and view workout activity.
+// Jira epic FF-27 (Admin back end).
 const express = require('express');
 const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
@@ -80,6 +81,7 @@ function insertExercises(workoutId, exercises) {
   for (const item of exercises) insertExercise.run(workoutId, item.exerciseName, item.sets, item.reps, item.instructions, item.mediaUrl);
 }
 
+// Jira: FF-43 Filter workouts
 // GET /api/admin/workouts?goal=&difficulty=&beginner=true|false – filtered list with activity counts
 router.get('/', (req, res) => {
   const { goal = '', difficulty = '', beginner = '' } = req.query;
@@ -103,11 +105,13 @@ router.get('/', (req, res) => {
   res.json(rows.map(toWorkout));
 });
 
+// Jira: FF-44 View workout activity
 // GET /api/admin/workouts/activity – completed logs per workout, most logged first
 router.get('/activity', (req, res) => {
   res.json(getActivity.all());
 });
 
+// Jira: FF-41 Edit workout
 // GET /api/admin/workouts/:id – one workout with exercises (for the edit form)
 router.get('/:id', (req, res) => {
   const workout = getWorkoutDetail(Number(req.params.id));
@@ -115,6 +119,7 @@ router.get('/:id', (req, res) => {
   res.json(workout);
 });
 
+// Jira: FF-40 Add workout
 // POST /api/admin/workouts – add a workout with exercises
 router.post('/', (req, res) => {
   const workout = readWorkoutInput(req.body);
@@ -129,6 +134,7 @@ router.post('/', (req, res) => {
   res.status(201).json(getWorkoutDetail(workoutId));
 });
 
+// Jira: FF-41 Edit workout
 // PUT /api/admin/workouts/:id – replace a workout's details and exercises
 router.put('/:id', (req, res) => {
   const workoutId = Number(req.params.id);
@@ -145,6 +151,7 @@ router.put('/:id', (req, res) => {
   res.json(getWorkoutDetail(workoutId));
 });
 
+// Jira: FF-42 Delete workout
 // DELETE /api/admin/workouts/:id – delete a workout, its exercises and (by cascade) its logs
 router.delete('/:id', (req, res) => {
   const workoutId = Number(req.params.id);

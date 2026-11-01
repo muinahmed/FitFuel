@@ -1,6 +1,7 @@
 // Accounts component – Muin Ahmed
 // Users admin: view, sort, search, edit, deactivate/reactivate and delete student accounts,
 // and user statistics. Passwords are never returned or changed here.
+// Jira epic FF-27 (Admin back end).
 const express = require('express');
 const db = require('../../db/database');
 const { requireAdmin } = require('../../middleware/requireAdmin');
@@ -36,6 +37,7 @@ function findUser(req) {
   return Number.isInteger(userId) ? getUser.get(userId) : undefined;
 }
 
+// Jira: FF-29 View all users, FF-30 Search users
 // GET /api/admin/users?search=&sort=name|dateJoined&order=asc|desc
 router.get('/', (req, res) => {
   const { search = '', sort = 'name', order = 'asc' } = req.query;
@@ -51,6 +53,7 @@ router.get('/', (req, res) => {
   res.json(rows.map(toUser));
 });
 
+// Jira: FF-34 User statistics
 // GET /api/admin/users/stats – totals and new sign-ups per week (last 8 weeks)
 router.get('/stats', (req, res) => {
   const { total, active } = countUsers.get();
@@ -63,6 +66,7 @@ router.get('/stats', (req, res) => {
   });
 });
 
+// Jira: FF-31 Edit user details
 // PUT /api/admin/users/:id – edit { fullName, email, weeklyBudget } (0 = not set yet)
 router.put('/:id', (req, res) => {
   const user = findUser(req);
@@ -80,6 +84,7 @@ router.put('/:id', (req, res) => {
   res.json(toUser(getUser.get(user.userId)));
 });
 
+// Jira: FF-32 Deactivate / reactivate account
 // PUT /api/admin/users/:id/status – deactivate or reactivate { isActive: true | false }
 router.put('/:id/status', (req, res) => {
   const user = findUser(req);
@@ -90,6 +95,7 @@ router.put('/:id/status', (req, res) => {
   res.json(toUser(getUser.get(user.userId)));
 });
 
+// Jira: FF-33 Delete user
 // DELETE /api/admin/users/:id – delete the account and (by cascade) all of the student's data
 router.delete('/:id', (req, res) => {
   const user = findUser(req);
