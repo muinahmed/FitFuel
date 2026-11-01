@@ -28,6 +28,25 @@ async function loadTodaysMeals() {
   }
 }
 
+// The next workout in this week's plan
+async function loadNextWorkout() {
+  const container = document.getElementById('next-workout');
+  try {
+    const plan = await api('/workouts/plan');
+    if (!plan.nextSession) {
+      container.innerHTML = '<p class="placeholder">No workout plan yet.</p><a href="/workouts.html">Choose your training days →</a>';
+      return;
+    }
+    const { day, isToday, workout } = plan.nextSession;
+    container.innerHTML = `
+      <p><strong>${isToday ? 'Today' : day}:</strong> ${escapeHtml(workout.workoutName)}
+         <span class="muted">(${workout.durationMinutes} min, ${escapeHtml(workout.difficulty)})</span></p>
+      <a href="/workouts.html">Go to workouts →</a>`;
+  } catch (error) {
+    container.innerHTML = `<p class="placeholder">${escapeHtml(error.message)}</p>`;
+  }
+}
+
 async function loadHome() {
   const pageMessage = document.getElementById('page-message');
   try {
@@ -52,3 +71,4 @@ async function loadHome() {
 
 loadHome();
 loadTodaysMeals();
+loadNextWorkout();

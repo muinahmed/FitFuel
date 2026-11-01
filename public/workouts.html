@@ -10,12 +10,43 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header id="site-header"></header>
   <main id="main" class="container">
-    <h1>Workouts</h1>
-    <div class="card">
-      <p class="placeholder">Simple workout plans for your goal. Coming in Sprint 3.</p>
+    <div class="page-heading">
+      <div>
+        <h1>Workouts</h1>
+        <p class="muted" id="goal-label"></p>
+      </div>
+      <a class="btn btn--secondary" href="/progress.html">See your progress</a>
     </div>
+
+    <div id="page-message" class="message" role="status"></div>
+
+    <section class="card training-days" aria-labelledby="days-heading">
+      <h2 id="days-heading">Your training week</h2>
+      <form id="days-form" class="inline-form">
+        <div class="form-field">
+          <label for="trainingDays">Training days per week</label>
+          <select id="trainingDays" name="trainingDays" required>
+            <option value="">Choose…</option>
+            <option value="2">2 days</option>
+            <option value="3">3 days</option>
+            <option value="4">4 days</option>
+            <option value="5">5 days</option>
+          </select>
+        </div>
+        <button type="submit" class="btn">Save</button>
+      </form>
+    </section>
+
+    <h2 class="section-heading">This week's plan</h2>
+    <div id="sessions" class="session-list"><p class="muted">Loading your plan…</p></div>
+
+    <section class="card section-heading" aria-labelledby="history-heading">
+      <h2 id="history-heading">Workout history</h2>
+      <ul id="history" class="history-list"></ul>
+    </section>
   </main>
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
+  <script src="/js/workouts.js"></script>
 </body>
 </html>

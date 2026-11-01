@@ -12,7 +12,7 @@ University Agile team project by **The Agile Trio**.
 |---|---|---|
 | Accounts (sign up, login, profile, navigation, users admin) | **Muin Ahmed** (Scrum Master) | `routes/auth.js`, `routes/users.js`, `middleware/requireLogin.js` |
 | Recipes & Meal Planning (recipes, meal plan, shopping list, recipes admin) | **Albina Rana** | `routes/recipes.js`, `routes/mealplans.js`, `utils/dietFilter.js` |
-| Workouts & Progress (workouts, logs, weight, charts, workouts admin) | **Priyanka Pant** | `routes/workouts.js`, `routes/progress.js` (Sprint 3) |
+| Workouts & Progress (workouts, logs, weight, charts, workouts admin) | **Priyanka Pant** | `routes/workouts.js`, `routes/progress.js`, `public/js/charts.js` |
 
 Shared: `server.js`, `db/`, `utils/`, `public/css/style.css`, `public/js/api.js`, `public/js/nav.js`.
 
@@ -171,7 +171,19 @@ All request and response bodies are JSON. Errors look like `{ "error": "message"
 
 ### Workouts & Progress – Priyanka
 
-Coming in Sprint 3.
+| Method | Path | Login | Description |
+|---|---|---|---|
+| GET | `/api/workouts/plan` | student | This week's plan: one session per training day with exercises (sets, reps, instructions, video link), done status, and the next workout |
+| PUT | `/api/workouts/plan` | student | Choose `{ trainingDays }` (2–5), saved in UserProfile.TrainingDays |
+| POST | `/api/workouts/:id/log` | student | Mark a workout as done today (WorkoutLog, IsCompleted = 1); once per workout per day |
+| GET | `/api/workouts/history` | student | The 30 most recent completed workouts |
+| GET | `/api/progress/weights` | student | Weight entries, oldest first |
+| POST | `/api/progress/weights` | student | Add `{ weightKg, logDate }` (20–400 kg, not in the future, one per date) |
+| PUT | `/api/progress/weights/:id` | student | Edit an own entry |
+| DELETE | `/api/progress/weights/:id` | student | Delete an own entry |
+| GET | `/api/progress/workouts-per-week` | student | Completed workouts in each of the last 8 weeks (for the bar chart) |
+
+**How the workout plan works:** training days are spread over the week (2 = Mon/Thu, 3 = Mon/Wed/Fri, 4 = Mon/Tue/Thu/Fri, 5 = Mon–Fri). Each day gets a workout for the student's goal, beginner-friendly and easier workouts first, cycling round if there are more days than workouts. A session counts as done when that workout has been logged this week. The charts on the Progress page are drawn with the `<canvas>` API in `public/js/charts.js` (no chart library) and have hover tooltips and a table view.
 
 ### Admin
 
@@ -191,7 +203,12 @@ Coming in Phase 4.
 | 2 | FF-13 | Weekly meal plan within budget and diet | Done |
 | 2 | FF-14 | Shopping list (combined ingredients) | Done |
 | 2 | FF-15 | Tick off shopping items | Done |
-| 3 | FF-16 to FF-20 | Workout plan, log a workout, exercise instructions, log weight, progress chart | Planned |
+| 3 | FF-16 | Workout plan (2–5 training days, matches goal, beginner-friendly first) | Done |
+| 3 | FF-17 | Log a workout (WorkoutLog, history) | Done |
+| 3 | FF-18 | Exercise instructions (instructions + video link) | Done |
+| 3 | FF-19 | Log weight (add, edit, delete) | Done |
+| 3 | FF-20 | Progress chart (weight line chart, workouts-per-week bar chart, canvas) | Done |
+| 3 | – | Meal plan: This week / Next week (Sunday plans next week) | Done (change request) |
 | 4 | FF-21 to FF-26 | Phone layout, spending vs budget, swap a meal, shopping list cost, favourites, weekly reminder | Planned |
 
 ## Project structure
@@ -204,6 +221,6 @@ db/seed.js             Demo data (npm run seed)
 routes/                One file per component area (header comment names the owner)
 middleware/            requireLogin (and requireAdmin in Phase 4)
 utils/                 Shared date and validation helpers
-public/                HTML pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js), img/
+public/                HTML pages, css/style.css, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js), img/
 tests/                 API tests (node:test + supertest)
 ```

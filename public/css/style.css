@@ -348,3 +348,63 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; }
 .week-toggle label { padding: 0.45rem 1.1rem; border-radius: 999px; font-weight: 600; color: var(--green-dark); cursor: pointer; }
 .week-toggle input:checked + label { background: var(--green-dark); color: #fff; }
 .week-toggle input:focus-visible + label { outline: 3px solid var(--lime); outline-offset: 2px; }
+
+/* ---------- Workouts ---------- */
+
+.inline-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 1rem; }
+.inline-form .form-field { flex: 1 1 200px; max-width: 280px; }
+.inline-form .btn { margin-bottom: 1rem; }
+
+.session-list { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); align-items: start; }
+.session { display: flex; flex-direction: column; gap: 0.25rem; }
+.session h3 { font-size: 1.15rem; margin: 0; }
+.session p { margin: 0; }
+.session--done { border-left: 4px solid var(--green); }
+.session__day { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.session details { margin: 0.5rem 0; }
+.session summary { cursor: pointer; font-weight: 600; color: var(--green-dark); padding: 0.25rem 0; }
+.session .btn { align-self: flex-start; margin-top: 0.25rem; }
+.badge--done { background: var(--green-dark); border-color: var(--green-dark); color: #fff; text-transform: none; }
+
+.exercise-list { padding-left: 1.25rem; margin: 0.5rem 0 0; }
+.exercise { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.exercise:last-child { border-bottom: 0; }
+.exercise__heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem 0.75rem; }
+.exercise__sets { color: var(--green-dark); font-weight: 600; white-space: nowrap; }
+.exercise p { margin: 0.25rem 0; font-size: 0.95rem; }
+
+.history-list { list-style: none; padding: 0; margin: 0; }
+.history-list li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); }
+.history-list li:last-child { border-bottom: 0; }
+
+/* ---------- Progress and charts ---------- */
+
+@media (min-width: 800px) { .grid--progress { grid-template-columns: 1fr 2fr; } }
+
+.chart { position: relative; }
+.chart canvas { display: block; width: 100%; height: 240px; touch-action: pan-y; }
+.chart-tooltip {
+  position: absolute;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  background: var(--text);
+  color: #fff;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+.chart-table { margin-top: 0.75rem; }
+.chart-table summary { cursor: pointer; color: var(--green-dark); font-weight: 600; }
+
+.table-scroll { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+.data-table th, .data-table td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--border); }
+.data-table th { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+.data-table input { width: 100%; min-width: 7rem; padding: 0.4rem; border: 1px solid #9DB3A5; border-radius: 6px; font: inherit; }
+.row-actions { text-align: right; white-space: nowrap; }
+.row-actions .link-button { margin-left: 0.75rem; }
+.link-button--danger { color: var(--error); }
+.session-list .all-done { grid-column: 1 / -1; margin: 0; }
+.badge--diet, .badge--done { text-transform: none; }

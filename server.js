@@ -41,6 +41,8 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/recipes', require('./routes/recipes'));
 app.use('/api/mealplans', require('./routes/mealplans'));
+app.use('/api/workouts', require('./routes/workouts'));
+app.use('/api/progress', require('./routes/progress'));
 
 // Unknown API paths get a JSON error instead of an HTML page
 app.use('/api', (req, res) => {
