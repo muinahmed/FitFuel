@@ -4,16 +4,23 @@ const favouritesCount = document.getElementById('result-count');
 const favouritesMessage = document.getElementById('page-message');
 
 function showCount(count) {
-  favouritesCount.textContent = count
-    ? `${count} favourite recipe${count === 1 ? '' : 's'}`
-    : 'No favourites yet. Tap the heart on a recipe to save it here.';
+  favouritesCount.textContent = count ? `${count} favourite recipe${count === 1 ? '' : 's'}` : '';
+  if (!count) {
+    favouritesGrid.innerHTML = `
+      <div class="empty-state">
+        <span class="icon-chip">${icon('heart', 26)}</span>
+        <h2>No favourites yet</h2>
+        <p>Tap the heart on any recipe to keep it here for next time.</p>
+        <a class="btn" href="/recipes.html">Browse recipes</a>
+      </div>`;
+  }
 }
 
 async function loadFavourites() {
   try {
     const recipes = await api('/recipes/favourites');
-    showCount(recipes.length);
     favouritesGrid.innerHTML = recipes.map(recipeCardHtml).join('');
+    showCount(recipes.length);
   } catch (error) {
     favouritesCount.textContent = '';
     showMessage(favouritesMessage, error.message);

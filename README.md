@@ -28,13 +28,16 @@ Shared: `server.js`, `db/`, `utils/`, `public/css/style.css`, `public/js/api.js`
 
 All styling is in `public/css/style.css`, built on the tokens at the top of the file.
 
-- **Colours (from the logo):** forest `#0B5D2E` for primary buttons, the active tab and the Home hero; leaf `#1E8B3A` for charts and progress; lime `#7CC242` for rings and active highlights; page background `#F0F5EE`; text `#1F2A24`; warning `#E8A33D` only for over-budget states; error `#C0392B`.
-- **Type:** system fonts only (works offline). Headings use the system's rounded/display face at heavy weight; numbers use tabular digits so amounts line up.
-- **Shape:** a radius hierarchy instead of one radius everywhere – hero 28px, cards 20px, chips and inputs 12–14px, buttons pill-shaped.
+- **Colours (from the logo):** forest `#0B5D2E` for primary buttons, headings on the landing page and the Home hero; pine `#0E3520` for the admin header, the log-in panel and the receipt printer; leaf `#1E8B3A` for charts and progress; lime `#7CC242` for rings and active highlights; page background `#EEF4EA`; text `#18261D`; warning `#E8A33D` only for over-budget states; error `#C0392B`.
+- **Type:** [Archivo](https://github.com/Omnibus-Type/Archivo), self-hosted in `public/fonts/` (SIL Open Font License, so it works offline and needs no CDN). It is a variable font with weight and width in one file: headings, the brand and big figures use its wide cut (`font-stretch: 116–125%`) for a sporty, athletic feel; body text is normal width. Numbers use tabular digits so amounts line up.
+- **Signature element – the receipt:** "Spend Wisely" is shown as a grocery receipt with a torn zig-zag edge. The landing page prints a week's meal plan as a receipt (it slides out of a printer slot once on load; switched off for people who prefer reduced motion), and the shopping list is styled the same way with dashed rules and the total in the wide cut.
+- **Surfaces:** three tiers instead of identical cards – the forest hero, white content cards with a fine border, and raised tiles you can click (recipe cards, shortcuts), which lift on hover. Radius hierarchy: hero 28px, cards 20px, chips and inputs 12–14px, buttons pill-shaped.
+- **Recipe cards:** the whole card opens the recipe (the "View recipe" button's hit area is stretched over the card); the heart button sits on top and still works on its own.
+- **Empty states:** an empty page gives one line of direction and one button (for example "No favourites yet" with "Browse recipes").
 - **Icons:** hand-drawn line icons in `public/js/icons.js` – `icon('flame')` in scripts or `<span data-icon="flame"></span>` in HTML. Price, calories and minutes are shown as icon + value instead of "A · B" text.
 - **Recipe pictures:** a recipe shows its photo when an admin has uploaded one; otherwise it gets a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`). Exercises can have a photo too.
 - **Favicon:** the emblem from the logo (`public/favicon.ico`, `public/img/favicon-192.png`, `public/img/apple-touch-icon.png`).
-- **Phones:** a bottom tab bar for the five main sections on student pages, and a Menu button for everything (including Profile and Log out). Admin pages have a dark header so admins always know where they are.
+- **Phones:** a bottom tab bar for the five main sections on student pages, and a Menu button for everything (including Profile and Log out). Page actions sit in one compact row, recipe filters sit side by side, and wide admin tables scroll sideways with a shadow at the edge that shows there is more. Admin pages have a dark header so admins always know where they are.
 
 ## Install, run, seed and test
 

@@ -14,7 +14,11 @@ async function loadRecipes() {
     resultCount.textContent = `${recipes.length} recipe${recipes.length === 1 ? '' : 's'} found`;
     recipeGrid.innerHTML = recipes.length
       ? recipes.map(recipeCardHtml).join('')
-      : '<p class="placeholder">No recipes match your search. Try other words or filters.</p>';
+      : `<div class="empty-state">
+          <span class="icon-chip">${icon('search', 26)}</span>
+          <h2>No recipes match</h2>
+          <p>Try other words, or set Meal type and Diet back to all.</p>
+        </div>`;
   } catch (error) {
     resultCount.textContent = '';
     showMessage(recipesMessage, error.message);

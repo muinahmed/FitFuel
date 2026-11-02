@@ -7,37 +7,52 @@
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/img/favicon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
-  <main id="main" class="container container--narrow auth">
-    <a href="/index.html"><img class="auth-logo" src="/img/logo.png" alt="FitFuel home" width="80" height="80"></a>
-    <div class="card">
-      <h1>Create your account</h1>
-      <div id="form-message" class="message" role="alert"></div>
-      <form id="signup-form">
-        <div class="form-field">
-          <label for="fullName">Full name</label>
-          <input id="fullName" name="fullName" type="text" maxlength="50" autocomplete="name" required>
-        </div>
-        <div class="form-field">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
-        </div>
-        <div class="form-field">
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" minlength="8" autocomplete="new-password"
-                 aria-describedby="password-hint" required>
-          <p id="password-hint" class="hint">At least 8 characters.</p>
-        </div>
-        <div class="form-field">
-          <label for="confirmPassword">Confirm password</label>
-          <input id="confirmPassword" name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
-        </div>
-        <button type="submit" class="btn btn--block">Sign up</button>
-      </form>
-      <p class="auth-switch">Already have an account? <a href="/login.html">Log in</a></p>
+  <main id="main" class="auth-layout">
+    <section class="auth-intro">
+      <a class="auth-intro__brand" href="/index.html"><img src="/img/logo.png" alt="" width="48" height="48"><span>FitFuel<span class="visually-hidden"> home</span></span></a>
+      <div class="auth-intro__body">
+        <p class="auth-intro__title"><span>Eat Healthy.</span> <span>Stay Active.</span> <span>Spend Wisely.</span></p>
+        <ul class="auth-intro__list">
+          <li><span data-icon="check"></span>A week of meals that fits your budget</li>
+          <li><span data-icon="check"></span>The shopping list made for you</li>
+          <li><span data-icon="check"></span>Short workouts for your goal</li>
+        </ul>
+      </div>
+      <p class="auth-intro__note">A student project by The Agile Trio</p>
+    </section>
+    <div class="auth-panel">
+      <div class="card">
+        <h1>Create your account</h1>
+        <p class="muted">It takes a minute. Then choose your goal and weekly food budget.</p>
+        <div id="form-message" class="message" role="alert"></div>
+        <form id="signup-form">
+          <div class="form-field">
+            <label for="fullName">Full name</label>
+            <input id="fullName" name="fullName" type="text" maxlength="50" autocomplete="name" required>
+          </div>
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
+          </div>
+          <div class="form-field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" minlength="8" autocomplete="new-password"
+                   aria-describedby="password-hint" required>
+            <p id="password-hint" class="hint">At least 8 characters.</p>
+          </div>
+          <div class="form-field">
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" minlength="8" autocomplete="new-password" required>
+          </div>
+          <button type="submit" class="btn btn--block">Sign up</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="/login.html">Log in</a></p>
+      </div>
     </div>
   </main>
   <script src="/js/icons.js"></script>
