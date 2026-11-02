@@ -7,6 +7,7 @@
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/img/favicon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -24,14 +25,16 @@
     <div id="week-toggle"></div>
     <div id="page-message" class="message" role="alert"></div>
 
-    <section class="card">
-      <div class="shopping-head">
-        <p id="total-cost" class="shopping-total" hidden></p>
-        <p id="progress-text" class="muted" aria-live="polite">Loading your shopping list…</p>
-        <div class="progress-bar" id="progress-bar" aria-hidden="true" hidden><div class="progress-bar__fill" id="progress-fill"></div></div>
-      </div>
-      <ul id="shopping-list" class="shopping-list"></ul>
-    </section>
+    <div class="receipt-shadow">
+      <section class="card receipt">
+        <div class="shopping-head">
+          <p id="total-cost" class="shopping-total" hidden></p>
+          <p id="progress-text" class="muted" aria-live="polite">Loading your shopping list…</p>
+          <div class="progress-bar" id="progress-bar" aria-hidden="true" hidden><div class="progress-bar__fill" id="progress-fill"></div></div>
+        </div>
+        <ul id="shopping-list" class="shopping-list"></ul>
+      </section>
+    </div>
   </main>
   <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>

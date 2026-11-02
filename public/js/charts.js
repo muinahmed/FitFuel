@@ -10,7 +10,7 @@ const CHART_STYLE = {
   text: '#55625A',
   strongText: '#1F2A24',
   surface: '#FFFFFF',
-  font: '12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+  font: '12px Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
   padding: { top: 20, right: 20, bottom: 30, left: 44 },
 };
 

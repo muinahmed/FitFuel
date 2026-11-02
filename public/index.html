@@ -7,6 +7,7 @@
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" href="/img/favicon-192.png" type="image/png" sizes="192x192">
   <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -14,8 +15,8 @@
   <main id="main" class="container">
     <section class="landing">
       <div>
-        <span class="landing__brand"><img src="/img/logo.png" alt="FitFuel logo" width="56" height="56">FitFuel</span>
-        <h1>Eat Healthy. Stay Active. Spend Wisely.</h1>
+        <span class="landing__brand"><img src="/img/logo.png" alt="" width="56" height="56">FitFuel</span>
+        <h1 class="landing__title"><span>Eat Healthy.</span> <span>Stay Active.</span> <span>Spend Wisely.</span></h1>
         <p class="lead">
           Plan a week of meals that fits your food budget, get the shopping list made for you,
           and follow short workouts built around your goal.
@@ -26,55 +27,61 @@
         </div>
       </div>
 
-      <!-- A picture of the app, built from demo data (decorative, so hidden from screen readers) -->
-      <div class="preview" aria-hidden="true">
-        <div class="preview__card preview__card--hero">
-          <div class="ring" style="width:96px;height:96px">
-            <svg width="96" height="96" focusable="false">
-              <circle class="ring__track" cx="48" cy="48" r="43" fill="none" stroke-width="10"/>
-              <circle class="ring__value" cx="48" cy="48" r="43" fill="none" stroke-width="10" stroke-linecap="round"
-                      stroke-dasharray="270.2" stroke-dashoffset="37.8"/>
-            </svg>
-            <div class="ring__centre"><span class="ring__number" style="font-size:1.2rem">86%</span></div>
+      <!-- A week's meal plan printed as a receipt, built from demo data (decorative, so hidden from screen readers) -->
+      <div class="printout" aria-hidden="true">
+        <div class="printout__slot"></div>
+        <div class="printout__window">
+          <div class="receipt-shadow">
+            <div class="receipt">
+              <div class="receipt__head">
+                <span class="receipt__brand">FitFuel</span>
+                <span class="muted">Emma's week</span>
+              </div>
+              <hr class="receipt__rule">
+              <ul class="receipt__lines">
+                <li><span class="receipt__day">Mon</span><span>Vegetable Chilli</span><span>15.00</span></li>
+                <li><span class="receipt__day">Tue</span><span>Mushroom Risotto</span><span>20.50</span></li>
+                <li><span class="receipt__day">Wed</span><span>Tofu Veggie Stir-Fry</span><span>24.50</span></li>
+                <li><span class="receipt__day">Thu</span><span>Sweet Potato Curry</span><span>23.00</span></li>
+                <li><span class="receipt__day">Fri</span><span>Black Bean Quesadilla</span><span>19.00</span></li>
+                <li><span class="receipt__day">Sat</span><span>Halloumi Couscous Salad</span><span>22.50</span></li>
+                <li><span class="receipt__day">Sun</span><span>Red Lentil Soup</span><span>11.00</span></li>
+                <li><span class="receipt__day"></span><span>7 lunches</span><span>123.00</span></li>
+              </ul>
+              <hr class="receipt__rule">
+              <dl class="receipt__totals">
+                <div><dt>Planned</dt><dd>258.50 kr</dd></div>
+                <div><dt>Weekly budget</dt><dd>300.00 kr</dd></div>
+                <div class="receipt__left"><dt>Left this week</dt><dd>41.50 kr</dd></div>
+              </dl>
+              <p class="receipt__foot">Shopping list ready: 39 items</p>
+            </div>
           </div>
-          <div>
-            <p class="preview__title">43.00 kr left</p>
-            <p>of a 300 kr food budget this week</p>
-          </div>
-        </div>
-        <div class="preview__card">
-          <div class="preview__row">
-            <span class="food-tile food-tile--lunch">🍲</span>
-            <div><p>Red Lentil Soup</p><span class="muted">Lunch, 11.00 kr</span></div>
-          </div>
-          <div class="preview__row">
-            <span class="food-tile food-tile--dinner">🍛</span>
-            <div><p>Sweet Potato Chickpea Curry</p><span class="muted">Dinner, 23.00 kr</span></div>
-          </div>
-        </div>
-        <div class="preview__card preview__row">
-          <span class="icon-chip" data-icon="dumbbell"></span>
-          <div><p>Beginner Fat-Burn Circuit</p><span class="muted">Monday, 20 minutes</span></div>
         </div>
       </div>
     </section>
 
     <section class="features" aria-label="What FitFuel does">
-      <div class="card feature">
+      <div class="feature">
         <span class="icon-chip" data-icon="wallet"></span>
-        <div><h2>Meals on a budget</h2><p>A weekly plan that fits your diet and budget, with the shopping list made for you.</p></div>
+        <h2>Meals on a budget</h2>
+        <p>A weekly plan that fits your diet and budget, with the shopping list made for you.</p>
       </div>
-      <div class="card feature">
+      <div class="feature">
         <span class="icon-chip" data-icon="dumbbell"></span>
-        <div><h2>Simple workouts</h2><p>Short plans for your goal, with clear instructions for every exercise.</p></div>
+        <h2>Simple workouts</h2>
+        <p>Short plans for your goal, with clear instructions for every exercise.</p>
       </div>
-      <div class="card feature">
+      <div class="feature">
         <span class="icon-chip" data-icon="chart"></span>
-        <div><h2>Track progress</h2><p>Log workouts and your weight, and watch the charts move.</p></div>
+        <h2>Track progress</h2>
+        <p>Log workouts and your weight, and watch the charts move.</p>
       </div>
     </section>
   </main>
-  <footer class="site-footer">FitFuel, made by The Agile Trio</footer>
+  <footer class="site-footer">
+    <p>FitFuel is a student project by The Agile Trio: Muin Ahmed, Albina Rana and Priyanka Pant.</p>
+  </footer>
   <script src="/js/icons.js"></script>
 </body>
 </html>
