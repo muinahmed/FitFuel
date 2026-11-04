@@ -26,7 +26,7 @@
     <section class="card week-progress" aria-labelledby="days-heading">
       <div class="week-progress__status">
         <h2 id="days-heading">Your training week</h2>
-        <p class="muted" id="week-status">Loading your plan…</p>
+        <p class="muted" id="week-status"><span class="skeleton__line" aria-hidden="true"></span><span class="visually-hidden">Loading your plan…</span></p>
         <div class="progress-bar" id="week-bar" aria-hidden="true" hidden><div class="progress-bar__fill" id="week-fill"></div></div>
       </div>
       <form id="days-form" class="inline-form">
@@ -45,11 +45,11 @@
     </section>
 
     <h2 class="section-heading">This week's plan</h2>
-    <div id="sessions" class="session-list"><p class="muted">Loading your plan…</p></div>
+    <div id="sessions" class="session-list" data-skeleton="card 3"></div>
 
     <section class="card section-heading" aria-labelledby="history-heading">
       <h2 id="history-heading">Workout history</h2>
-      <ul id="history" class="history-list"></ul>
+      <ul id="history" class="history-list" data-skeleton="row 4"></ul>
     </section>
   </main>
   <script src="/js/icons.js"></script>

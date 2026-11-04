@@ -98,6 +98,8 @@ if (require.main === module) {
   if (require('./db/seed').seedIfEmpty(db)) {
     console.log('New database detected - demo data added (run `npm run seed` to reset it).');
   }
+  require('./db/seed').ensureAdditionalRecipes(db);
+  require('./db/seed').ensureAdditionalWorkouts(db);
 
   const port = Number(process.env.PORT) || 3000;
   app.listen(port, () => console.log(`FitFuel is running at http://localhost:${port}`));

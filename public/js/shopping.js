@@ -17,9 +17,11 @@ function formatQuantity(quantity) {
 function updateProgress() {
   const boxes = shoppingList.querySelectorAll('input[type="checkbox"]');
   const ticked = shoppingList.querySelectorAll('input[type="checkbox"]:checked');
-  progressText.textContent = `${ticked.length} of ${boxes.length} items ticked off`;
+  progressText.textContent = boxes.length && ticked.length === boxes.length
+    ? `All ${boxes.length} items ticked off. Shopping done!`
+    : `${ticked.length} of ${boxes.length} items ticked off`;
   document.getElementById('progress-bar').hidden = boxes.length === 0;
-  document.getElementById('progress-fill').style.width = boxes.length ? `${(ticked.length / boxes.length) * 100}%` : '0%';
+  setBarWidth(document.getElementById('progress-fill'), boxes.length ? (ticked.length / boxes.length) * 100 : 0);
 }
 
 function itemHtml(item, index) {
@@ -43,13 +45,20 @@ async function loadShoppingList() {
     document.getElementById('week-label').textContent = `Week of ${formatDate(list.weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`;
     document.getElementById('plan-link').href = `/mealplan.html${weekQuery(list.week)}`;
     shoppingList.innerHTML = '';
+    document.getElementById('shopping-empty').innerHTML = '';
     document.getElementById('progress-bar').hidden = true;
     const totalCost = document.getElementById('total-cost');
     totalCost.hidden = list.items.length === 0;
     totalCost.innerHTML = `Estimated cost: <strong>${formatKr(list.totalCost)}</strong>`;
     if (list.items.length === 0) {
       const weekName = list.week === 'next' ? 'next week' : 'this week';
-      progressText.innerHTML = `Your shopping list for ${weekName} is empty. <a href="/mealplan.html${weekQuery(list.week)}">Generate a meal plan</a> to fill it.`;
+      progressText.textContent = '';
+      document.getElementById('shopping-empty').innerHTML = emptyStateHtml({
+        image: '/img/budget-banner.png',
+        title: `Your shopping list for ${weekName} is empty`,
+        text: 'Plan your meals and FitFuel adds up every ingredient you need, with an estimated cost.',
+        action: { href: `/mealplan.html${weekQuery(list.week)}`, label: 'Plan your meals' },
+      });
       return;
     }
     shoppingList.innerHTML = list.items.map(itemHtml).join('');
@@ -68,6 +77,7 @@ async function saveTick(checkbox) {
   const sameIngredient = [...shoppingList.querySelectorAll('input[type="checkbox"]')]
     .filter((box) => box.dataset.ingredient === checkbox.dataset.ingredient);
   sameIngredient.forEach((box) => { box.checked = isChecked; });
+  if (isChecked) sameIngredient.forEach((box) => flash(box.closest('.shopping-item'), 'pop'));
   updateProgress();
 
   try {

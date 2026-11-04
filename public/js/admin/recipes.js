@@ -55,7 +55,7 @@ async function loadRecipes() {
   document.getElementById('result-count').textContent = `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}`;
   recipeTable.innerHTML = recipes.length
     ? recipes.map(recipeRowHtml).join('')
-    : '<tr><td colspan="7" class="placeholder">No recipes match your search.</td></tr>';
+    : `<tr><td colspan="7">${emptyStateHtml({ compact: true, iconName: 'search', title: 'No recipes match your search', text: 'Try other words, or change the meal type or diet filter.' })}</td></tr>`;
 }
 
 async function loadUsage() {

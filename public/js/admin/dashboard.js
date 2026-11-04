@@ -1,9 +1,5 @@
 // Admin dashboard (all components): one card per admin area with headline numbers.
 
-function statHtml(label, value) {
-  return `<div class="stat"><span class="stat__value">${value}</span><span class="stat__label">${label}</span></div>`;
-}
-
 async function loadDashboard() {
   try {
     const [userStats, recipeUsage, workoutActivity] = await Promise.all([
@@ -29,4 +25,4 @@ async function loadDashboard() {
   }
 }
 
-loadDashboard();
+loadDashboard().then(() => animateProgressCounters());

@@ -60,10 +60,18 @@ function renderPlan(plan) {
   shoppingLink.href = `/shopping.html${weekQuery(plan.week)}`;
 
   if (!plan.hasPlan) {
-    costSummary.innerHTML = plan.weeklyBudget > 0
-      ? `<p>No plan for ${weekName(plan)} yet. Your budget is <strong>${formatKr(plan.weeklyBudget)}</strong> – press "Generate plan" to get started.</p>`
-      : '<p>Set your weekly food budget on your <a href="/profile.html">profile</a>, then generate a plan.</p>';
-    planGrid.innerHTML = '';
+    const hasBudget = plan.weeklyBudget > 0;
+    costSummary.innerHTML = hasBudget
+      ? `<p>Your budget for ${weekName(plan)} is <strong>${formatKr(plan.weeklyBudget)}</strong>.</p>`
+      : '<p>No weekly food budget yet.</p>';
+    planGrid.innerHTML = emptyStateHtml({
+      image: '/img/meal-prep-banner.png',
+      title: hasBudget ? `No meals planned for ${weekName(plan)} yet` : 'Set your budget to start planning',
+      text: hasBudget
+        ? `FitFuel fills 7 days of lunches and dinners that fit your diet and ${formatKr(plan.weeklyBudget)} budget.`
+        : 'Tell FitFuel how much you can spend on food each week, then generate a plan.',
+      action: hasBudget ? { button: 'empty-generate', label: `Plan ${weekName(plan)}` } : { href: '/profile.html', label: 'Set your budget' },
+    });
     return;
   }
 
@@ -90,6 +98,7 @@ async function generatePlan() {
   generateButton.disabled = true;
   try {
     renderPlan(await api(`/mealplans/generate${weekQuery(selectedWeek)}`, { method: 'POST' }));
+    revealChildren(planGrid);
     if (!currentPlan.warning) showMessage(planMessage, `Your meal plan for ${weekName(currentPlan)} is ready.`, 'success');
   } catch (error) {
     showMessage(planMessage, error.message);
@@ -108,7 +117,10 @@ async function swapMeal(button) {
     if (!result.warning) showMessage(planMessage, `Swapped ${result.swapped.from} for ${result.swapped.to}. Your shopping list is updated.`, 'success');
     // Keep keyboard focus on the same meal's Swap button after the plan is redrawn
     const sameButton = planGrid.querySelector(`[data-swap-entry="${button.dataset.swapEntry}"]`);
-    if (sameButton) sameButton.focus();
+    if (sameButton) {
+      sameButton.focus();
+      flash(sameButton.closest('.plan-meal'), 'highlight');
+    }
   } catch (error) {
     button.disabled = false;
     showMessage(planMessage, error.message);
@@ -117,6 +129,7 @@ async function swapMeal(button) {
 
 generateButton.addEventListener('click', generatePlan);
 planGrid.addEventListener('click', (event) => {
+  if (event.target.closest('#empty-generate')) return generatePlan();
   const swapButton = event.target.closest('[data-swap-entry]');
   if (swapButton) return swapMeal(swapButton);
   const recipeButton = event.target.closest('[data-recipe-id]');

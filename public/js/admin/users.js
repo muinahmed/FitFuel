@@ -7,10 +7,6 @@ const sorting = { sort: 'name', order: 'asc' };
 let users = [];
 let searchTimer = null;
 
-function statHtml(label, value) {
-  return `<div class="stat"><span class="stat__value">${value}</span><span class="stat__label">${label}</span></div>`;
-}
-
 async function loadStats() {
   const stats = await api('/admin/users/stats');
   document.getElementById('user-stats').innerHTML = statHtml('Total users', stats.total)
@@ -21,6 +17,7 @@ async function loadStats() {
   document.querySelector('#signup-chart canvas').setAttribute('aria-label',
     `Bar chart of new sign-ups per week: ${total} in the last 8 weeks. `
     + stats.signupsPerWeek.map((week) => `${label(week)}: ${week.count}`).join(', '));
+  animateProgressCounters(document.getElementById('user-stats'));
   renderBarChart(document.getElementById('signup-chart'), stats.signupsPerWeek.map((week) => ({
     label: label(week),
     value: week.count,
@@ -59,7 +56,7 @@ async function loadUsers() {
   document.getElementById('result-count').textContent = `${users.length} user${users.length === 1 ? '' : 's'}`;
   userTable.innerHTML = users.length
     ? users.map(userRowHtml).join('')
-    : '<tr><td colspan="6" class="placeholder">No users match your search.</td></tr>';
+    : `<tr><td colspan="6">${emptyStateHtml({ compact: true, iconName: 'search', title: 'No users match your search', text: 'Check the spelling, or search by part of the name or email.' })}</td></tr>`;
   showSorting();
 }
 

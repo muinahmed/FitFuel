@@ -14,7 +14,11 @@ async function loadRecipes() {
     resultCount.textContent = `${recipes.length} recipe${recipes.length === 1 ? '' : 's'} found`;
     recipeGrid.innerHTML = recipes.length
       ? recipes.map(recipeCardHtml).join('')
-      : '<p class="placeholder">No recipes match your search. Try other words or filters.</p>';
+      : emptyStateHtml({
+        compact: true, iconName: 'search', title: 'No recipes match your search',
+        text: 'Try other words, or clear the filters to see every recipe.',
+        action: { button: 'clear-filters', label: 'Clear filters' },
+      });
   } catch (error) {
     resultCount.textContent = '';
     showMessage(recipesMessage, error.message);
@@ -39,6 +43,11 @@ document.getElementById('search').addEventListener('input', () => {
   searchTimer = setTimeout(loadRecipes, 250);
 });
 recipeGrid.addEventListener('click', (event) => {
+  if (event.target.closest('#clear-filters')) {
+    filterForm.reset();
+    loadRecipes();
+    return;
+  }
   const button = event.target.closest('[data-recipe-id]');
   if (button) openRecipeDetail(button.dataset.recipeId);
 });

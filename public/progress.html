@@ -15,7 +15,7 @@
   <main id="main" class="container">
     <h1>Progress</h1>
     <div id="page-message" class="message" role="alert"></div>
-    <section class="stat-tiles" id="progress-stats" aria-label="Summary"></section>
+    <section class="stat-tiles" id="progress-stats" aria-label="Summary" data-skeleton="stat 4"></section>
 
     <div class="grid grid--progress">
       <section class="card" aria-labelledby="log-heading">
@@ -68,7 +68,7 @@
       <div class="table-scroll">
         <table class="data-table">
           <thead><tr><th scope="col">Date</th><th scope="col">Weight</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
-          <tbody id="weight-table"></tbody>
+          <tbody id="weight-table" data-skeleton="row 3"></tbody>
         </table>
       </div>
     </section>
@@ -77,6 +77,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/charts.js"></script>
+  <script src="/js/countUp.js"></script>
   <script src="/js/progress.js"></script>
 </body>
 </html>

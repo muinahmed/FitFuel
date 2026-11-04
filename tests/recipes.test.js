@@ -61,7 +61,16 @@ describe('Browse recipes (FF-12)', () => {
   test('search and filters combine', async () => {
     const { agent } = await signedUpAgent();
     const res = await agent.get('/api/recipes?search=curry&mealType=dinner&diet=vegan').expect(200);
-    assert.deepEqual(res.body.map((recipe) => recipe.recipeName), ['Sweet Potato Chickpea Curry']);
+    assert.ok(res.body.length > 0);
+    assert.ok(res.body.some((recipe) => recipe.recipeName === 'Sweet Potato Chickpea Curry'));
+    for (const recipe of res.body) {
+      assert.match(recipe.recipeName, /curry/i);
+      assert.equal(recipe.mealType, 'dinner');
+      assert.ok(recipe.dietTags.includes('vegan'), recipe.recipeName);
+    }
+    // Curries that are not vegan dinners are left out
+    const all = await agent.get('/api/recipes?search=curry').expect(200);
+    assert.ok(all.body.length > res.body.length);
   });
 
   test('rejects unknown meal types and diets', async () => {

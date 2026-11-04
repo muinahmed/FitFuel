@@ -32,9 +32,9 @@ describe('Seed data', () => {
                         WHERE t.DietType = 'vegan' AND r.IsVegetarian = 0`), 0);
   });
 
-  test('has 3 workouts per goal, each with 4–6 exercises', () => {
+  test('has at least 5 workouts per goal, each with 4–6 exercises', () => {
     for (const goal of ['lose weight', 'build muscle', 'stay healthy']) {
-      assert.equal(count('SELECT COUNT(*) AS n FROM Workouts WHERE Goal = ?', goal), 3);
+      assert.ok(count('SELECT COUNT(*) AS n FROM Workouts WHERE Goal = ?', goal) >= 5);
     }
     for (const { WorkoutID } of db.prepare('SELECT WorkoutID FROM Workouts').all()) {
       const exercises = count('SELECT COUNT(*) AS n FROM WorkoutExercise WHERE WorkoutID = ?', WorkoutID);

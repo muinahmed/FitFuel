@@ -76,9 +76,12 @@ function progressRingHtml(fraction, centreHtml, { over = false, light = false } 
   return `
     <div class="ring${over ? ' ring--over' : ''}${light ? ' ring--light' : ''}">
       <svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" aria-hidden="true" focusable="false">
+          <defs><linearGradient id="home-progress-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#B7E84B"/><stop offset="52%" stop-color="#48C58A"/><stop offset="100%" stop-color="#48B8D1"/></linearGradient></defs>
         <circle class="ring__track" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"/>
         <circle class="ring__value" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"
-                stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - shown)}"/>
+                  stroke="url(#home-progress-gradient)"
+                stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - shown)}"
+                style="--ring-start:${circumference};--ring-end:${circumference * (1 - shown)}"/>
       </svg>
       <div class="ring__centre">${centreHtml}</div>
     </div>`;
@@ -112,4 +115,91 @@ async function withBusyButton(form, task) {
   } finally {
     button.disabled = false;
   }
+}
+
+// ---------- Shared UI: loading skeletons, empty states, action feedback ----------
+
+// Grey shimmering shapes shown while a container waits for data. Kinds: card, recipe, row, chart, stat.
+// wrapper: '' (a div group), 'li' for lists, 'tr' for table bodies, so the HTML stays valid.
+function skeletonHtml(kind, count, wrapper = '') {
+  const shape = {
+    card: '<div class="skeleton skeleton--card"><span class="skeleton__line skeleton__line--title"></span><span class="skeleton__line"></span><span class="skeleton__line skeleton__line--short"></span></div>',
+    recipe: '<div class="skeleton skeleton--recipe"><span class="skeleton__image"></span><span class="skeleton__line skeleton__line--title"></span><span class="skeleton__line skeleton__line--short"></span></div>',
+    row: '<div class="skeleton skeleton--row"><span class="skeleton__dot"></span><span class="skeleton__line"></span></div>',
+    chart: '<div class="skeleton skeleton--chart"></div>',
+    stat: '<div class="skeleton skeleton--stat"><span class="skeleton__dot"></span><span class="skeleton__line skeleton__line--short"></span></div>',
+  }[kind] || '';
+  if (wrapper === 'li') return `<li class="skeleton-item" aria-hidden="true">${shape}</li>`.repeat(count);
+  if (wrapper === 'tr') return `<tr class="skeleton-item" aria-hidden="true"><td colspan="9">${shape}</td></tr>`.repeat(count);
+  return `<div class="skeleton-group skeleton-group--${kind}" aria-hidden="true">${shape.repeat(count)}</div>`;
+}
+
+// Containers marked data-skeleton="kind count" (e.g. "recipe 6") show skeletons until the page
+// script puts real content in them; that first content then fades in once.
+function fillSkeletons() {
+  document.querySelectorAll('[data-skeleton]').forEach((container) => {
+    const [kind, count] = container.dataset.skeleton.split(' ');
+    const wrapper = { UL: 'li', OL: 'li', TBODY: 'tr' }[container.tagName] || '';
+    container.innerHTML = skeletonHtml(kind, Number(count) || 3, wrapper);
+    container.setAttribute('aria-busy', 'true');
+    const observer = new MutationObserver(() => {
+      observer.disconnect();
+      container.removeAttribute('aria-busy');
+      revealChildren(container);
+    });
+    observer.observe(container, { childList: true });
+  });
+}
+fillSkeletons();
+
+// Fade a container's children in one after another, once (e.g. after a new plan is generated)
+function revealChildren(container) {
+  container.classList.remove('just-loaded');
+  void container.offsetWidth;
+  container.classList.add('just-loaded');
+  setTimeout(() => container.classList.remove('just-loaded'), 1000);
+}
+
+// Friendly "nothing here yet" block with one clear next step.
+// image: a photo path, or iconName for an icon instead. text may hold trusted HTML (e.g. a link).
+// action: { href, label } for a link, or { button: id, label } for a button the page wires up.
+function emptyStateHtml({ image, iconName, title, text, action, compact = false }) {
+  const picture = image
+    ? `<img class="empty-state__image" src="${escapeHtml(image)}" alt="" loading="lazy">`
+    : `<span class="empty-state__icon">${icon(iconName || 'leaf', 28)}</span>`;
+  let actionHtml = '';
+  if (action && action.href) actionHtml = `<a class="btn" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`;
+  if (action && action.button) actionHtml = `<button type="button" class="btn" id="${escapeHtml(action.button)}">${escapeHtml(action.label)}</button>`;
+  return `
+    <div class="empty-state${compact ? ' empty-state--compact' : ''}">
+      ${picture}
+      <div class="empty-state__text">
+        <p class="empty-state__title">${escapeHtml(title)}</p>
+        ${text ? `<p class="empty-state__body">${text}</p>` : ''}
+        ${actionHtml}
+      </div>
+    </div>`;
+}
+
+// Set a progress bar's fill width on the next frame, so it grows smoothly even when the bar
+// has just been shown (CSS transitions do not run on an element that was display: none)
+function setBarWidth(fill, percent) {
+  requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = `${percent}%`; }));
+}
+
+// Big number with a small label (admin dashboard and users statistics). Numbers count up from
+// zero when the page calls animateProgressCounters (countUp.js).
+function statHtml(label, value) {
+  const shown = typeof value === 'number' ? `<span data-count-to="${value}">${value}</span>` : escapeHtml(value);
+  return `<div class="stat"><span class="stat__value">${shown}</span><span class="stat__label">${escapeHtml(label)}</span></div>`;
+}
+
+// Replay a short animation on an element that just changed. kind: pop, highlight, appear
+function flash(element, kind = 'highlight') {
+  if (!element) return;
+  const className = `flash-${kind}`;
+  element.classList.remove(className);
+  void element.offsetWidth; // restart the animation if it is already running
+  element.classList.add(className);
+  element.addEventListener('animationend', () => element.classList.remove(className), { once: true });
 }

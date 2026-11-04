@@ -27,6 +27,9 @@ function exerciseHtml(exercise) {
 
 function sessionHtml(session, isNext) {
   const { workout } = session;
+  const photo = workout.imageUrl
+    ? `<img class="session__photo" src="${escapeHtml(workout.imageUrl)}" alt="" loading="lazy">`
+    : '';
   const badges = [
     session.isToday ? '<span class="badge badge--today">Today</span>' : '',
     session.isDone ? `<span class="badge badge--done">${icon('check', 14)}Done</span>` : '',
@@ -37,7 +40,8 @@ function sessionHtml(session, isNext) {
     : `<button type="button" class="btn" data-log-workout="${workout.workoutId}" data-workout-name="${escapeHtml(workout.workoutName)}">${icon('check', 18)}Mark as done today</button>`;
 
   return `
-    <article class="card session${session.isDone ? ' session--done' : ''}">
+    <article class="card session${session.isDone ? ' session--done' : ''}" data-workout-id="${workout.workoutId}">
+      ${photo}
       <div class="session__head">
         <span class="icon-chip">${icon(session.isDone ? 'check' : 'dumbbell', 22)}</span>
         <div>
@@ -70,20 +74,29 @@ function renderWeekStatus(plan) {
   }
   const done = plan.sessions.filter((session) => session.isDone).length;
   status.textContent = `${done} of ${plan.sessions.length} workouts done this week`;
-  document.getElementById('week-fill').style.width = `${(done / plan.sessions.length) * 100}%`;
+  setBarWidth(document.getElementById('week-fill'), (done / plan.sessions.length) * 100);
 }
 
 function renderPlan(plan) {
   document.getElementById('trainingDays').value = plan.trainingDays || '';
   document.getElementById('goal-label').innerHTML = plan.goal
-    ? `Your goal is to ${escapeHtml(plan.goal)}. <a href="/profile.html">Change goal</a>`
+    ? `Your goal is to ${escapeHtml(plan.goal)}. <a class="goal-change-link" href="/profile.html">Change goal <span aria-hidden="true">↗</span></a>`
     : '';
   renderWeekStatus(plan);
 
   if (!plan.goal) {
-    sessionsContainer.innerHTML = '<p class="placeholder">Choose your fitness goal on your <a href="/profile.html">profile</a> to get workout suggestions.</p>';
+    sessionsContainer.innerHTML = emptyStateHtml({
+      image: '/img/workouts/wellness.png',
+      title: 'Choose your fitness goal first',
+      text: 'Lose weight, build muscle or stay healthy: FitFuel suggests workouts that match.',
+      action: { href: '/profile.html', label: 'Choose a goal' },
+    });
   } else if (!plan.trainingDays) {
-    sessionsContainer.innerHTML = '<p class="placeholder">Choose how many days a week you want to train, and FitFuel will suggest a plan.</p>';
+    sessionsContainer.innerHTML = emptyStateHtml({
+      image: plan.goalImageUrl, iconName: 'dumbbell',
+      title: 'How many days a week do you want to train?',
+      text: 'Pick 2 to 5 days above and press Save. FitFuel spreads the workouts over your week, with rest days in between.',
+    });
   } else {
     const next = plan.nextSession;
     const allDone = plan.sessions.every((session) => session.isDone);
@@ -104,7 +117,7 @@ function renderHistory(logs) {
             <span class="muted">(${log.durationMinutes} min)</span></span>
           <span class="history-list__date">${formatDate(log.logDate, { weekday: 'short', day: 'numeric', month: 'short' })}</span>
         </li>`).join('')
-    : '<li class="placeholder">No workouts logged yet. Mark a workout as done to start your history.</li>';
+    : '<li class="history-list__empty">No workouts logged yet. Mark a workout as done and it shows up here.</li>';
 }
 
 async function loadWorkouts() {
@@ -140,6 +153,7 @@ sessionsContainer.addEventListener('click', async (event) => {
     await api(`/workouts/${button.dataset.logWorkout}/log`, { method: 'POST' });
     await loadWorkouts();
     showMessage(workoutsMessage, `Great job! ${button.dataset.workoutName} is logged for today.`, 'success');
+    flash(sessionsContainer.querySelector(`.session--done[data-workout-id="${button.dataset.logWorkout}"]`), 'highlight');
   } catch (error) {
     button.disabled = false;
     showMessage(workoutsMessage, error.message);

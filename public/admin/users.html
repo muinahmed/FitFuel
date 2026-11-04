@@ -19,7 +19,7 @@
     <div class="grid grid--progress">
       <section class="card" aria-labelledby="stats-heading">
         <h2 id="stats-heading">User statistics</h2>
-        <div class="stat-row" id="user-stats"></div>
+        <div class="stat-row" id="user-stats" data-skeleton="stat 3"></div>
       </section>
       <section class="card" aria-labelledby="signups-heading">
         <h2 id="signups-heading">New sign-ups per week</h2>
@@ -50,7 +50,7 @@
               <th scope="col"><span class="visually-hidden">Actions</span></th>
             </tr>
           </thead>
-          <tbody id="user-table"></tbody>
+          <tbody id="user-table" data-skeleton="row 5"></tbody>
         </table>
       </div>
     </section>
@@ -85,6 +85,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/charts.js"></script>
+  <script src="/js/countUp.js"></script>
   <script src="/js/admin/forms.js"></script>
   <script src="/js/admin/users.js"></script>
 </body>

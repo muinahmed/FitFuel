@@ -95,7 +95,7 @@ function recipeDetailHtml(recipe) {
 async function openRecipeDetail(recipeId) {
   const dialog = getRecipeDialog();
   const body = dialog.querySelector('.recipe-dialog__body');
-  body.innerHTML = '<h2 id="recipe-dialog-title">Loading recipe…</h2>';
+  body.innerHTML = `<h2 id="recipe-dialog-title" class="visually-hidden">Loading recipe…</h2>${skeletonHtml('recipe', 1)}`;
   dialog.showModal();
 
   try {
@@ -112,11 +112,12 @@ function recipeCardHtml(recipe) {
     <article class="card recipe-card">
       <div class="recipe-card__top">
         ${foodTileHtml(recipe, 'large')}
+        <span class="recipe-card__type">${escapeHtml(recipe.mealType)}</span>
         <button type="button" class="heart-button" data-favourite="${recipe.recipeId}"
                 aria-pressed="${Boolean(recipe.isFavourite)}" aria-label="Favourite: ${name}">${icon('heart', 20)}</button>
       </div>
       <div class="recipe-card__body">
-        <p class="recipe-meta"><span class="badge">${escapeHtml(recipe.mealType)}</span>${dietBadgesHtml(recipe)}</p>
+        ${dietBadgesHtml(recipe) ? `<p class="recipe-meta">${dietBadgesHtml(recipe)}</p>` : ''}
         <h2>${name}</h2>
         ${recipeMetaHtml(recipe)}
         <button type="button" class="btn btn--secondary" data-recipe-id="${recipe.recipeId}">View recipe</button>
@@ -135,6 +136,7 @@ function setUpFavouriteButtons(container, messageElement, onChange) {
     try {
       await api(`/recipes/${button.dataset.favourite}/favourite`, { method: makeFavourite ? 'PUT' : 'DELETE' });
       button.setAttribute('aria-pressed', String(makeFavourite));
+      if (makeFavourite) flash(button, 'pop');
       if (onChange) onChange(Number(button.dataset.favourite), makeFavourite);
     } catch (error) {
       showMessage(messageElement, error.message);

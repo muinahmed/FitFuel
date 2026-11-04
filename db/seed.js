@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { hashPasswordSync } = require('../utils/passwords');
 const { daysAgo } = require('../utils/dates');
+const { ensureRecipeImages } = require('./recipeImages');
 
 
 // Child tables first so foreign keys never block a drop
@@ -156,6 +157,111 @@ const RECIPES = [
   },
 ];
 
+// Additional recipes added after the original demo catalog. Keep these unique by name so
+// ensureAdditionalRecipes can safely migrate an existing database without reseeding it.
+const ADDITIONAL_RECIPES = [
+  {
+    name: 'Apple Cinnamon Overnight Oats', mealType: 'breakfast', calories: 390, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Rolled oats', 60, 'g', 2.50], ['Oat drink', 180, 'ml', 3.00], ['Apple', 1, 'pcs', 3.00], ['Cinnamon', 1, 'tsp', 0.50], ['Raisins', 15, 'g', 1.50]],
+    steps: ['Add oats, oat drink, cinnamon and raisins to a jar.', 'Grate half the apple and stir it through.', 'Cover and chill overnight.', 'Top with the remaining sliced apple before serving.'],
+  },
+  {
+    name: 'Avocado Egg Toast', mealType: 'breakfast', calories: 430, vegetarian: true, tags: ['halal'],
+    ingredients: [['Wholegrain bread', 2, 'slices', 3.00], ['Eggs', 2, 'pcs', 5.00], ['Avocado', 0.5, 'pcs', 6.00], ['Lemon', 0.25, 'pcs', 0.75]],
+    steps: ['Toast the bread until crisp.', 'Mash the avocado with lemon juice, salt and pepper.', 'Fry or poach the eggs to your liking.', 'Spread the avocado on the toast and top with the eggs.'],
+  },
+  {
+    name: 'Fluffy Apple Pancakes', mealType: 'breakfast', calories: 460, vegetarian: true, tags: ['halal'],
+    ingredients: [['Plain flour', 70, 'g', 2.00], ['Milk', 100, 'ml', 2.00], ['Egg', 1, 'pcs', 3.00], ['Apple', 0.5, 'pcs', 2.00], ['Baking powder', 1, 'tsp', 0.50], ['Yogurt', 40, 'g', 2.00]],
+    steps: ['Whisk flour, baking powder, milk and egg into a smooth batter.', 'Grate the apple and fold it into the batter.', 'Cook small pancakes in a lightly oiled pan until golden on both sides.', 'Serve with a spoonful of yogurt.'],
+  },
+  {
+    name: 'Banana Cottage Cheese Bowl', mealType: 'breakfast', calories: 370, vegetarian: true, tags: ['halal'],
+    ingredients: [['Cottage cheese', 150, 'g', 6.00], ['Banana', 1, 'pcs', 2.50], ['Rolled oats', 25, 'g', 0.75], ['Walnuts', 10, 'g', 2.00], ['Honey', 1, 'tsp', 0.50]],
+    steps: ['Spoon the cottage cheese into a bowl.', 'Slice the banana over the top.', 'Add oats and chopped walnuts.', 'Drizzle with honey and serve.'],
+  },
+  {
+    name: 'Greek Chickpea Feta Salad', mealType: 'lunch', calories: 510, vegetarian: true, tags: ['halal'],
+    ingredients: [['Chickpeas (canned)', 130, 'g', 4.50], ['Cucumber', 100, 'g', 2.50], ['Cherry tomatoes', 100, 'g', 5.00], ['Feta cheese', 35, 'g', 5.25], ['Olives', 20, 'g', 2.00], ['Lemon', 0.25, 'pcs', 0.75]],
+    steps: ['Drain and rinse the chickpeas.', 'Chop the cucumber and halve the tomatoes.', 'Toss with olives and lemon juice.', 'Crumble feta over the salad and season with black pepper.'],
+  },
+  {
+    name: 'Chicken Pesto Pasta', mealType: 'lunch', calories: 620, vegetarian: false, tags: ['halal'],
+    ingredients: [['Pasta', 90, 'g', 1.80], ['Chicken breast (halal)', 120, 'g', 12.80], ['Pesto', 20, 'g', 3.00], ['Cherry tomatoes', 70, 'g', 3.50], ['Spinach', 30, 'g', 2.40]],
+    steps: ['Cook the pasta according to the packet, then drain.', 'Pan-fry the chicken until cooked through and slice it.', 'Stir pesto through the warm pasta.', 'Fold in tomatoes, spinach and chicken.'],
+  },
+  {
+    name: 'Black Bean Burrito Bowl', mealType: 'lunch', calories: 570, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Rice', 80, 'g', 1.80], ['Black beans (canned)', 120, 'g', 4.00], ['Sweetcorn (canned)', 50, 'g', 1.90], ['Tomato', 1, 'pcs', 2.50], ['Avocado', 0.25, 'pcs', 3.00], ['Lime', 0.25, 'pcs', 1.00]],
+    steps: ['Cook the rice until fluffy.', 'Drain and warm the black beans and corn.', 'Dice the tomato and avocado.', 'Serve everything in a bowl with lime juice and chopped coriander.'],
+  },
+  {
+    name: 'Roasted Veggie Hummus Pita', mealType: 'lunch', calories: 490, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Pita bread', 1, 'pcs', 3.00], ['Hummus', 45, 'g', 4.50], ['Red pepper', 0.5, 'pcs', 3.00], ['Courgette', 80, 'g', 2.40], ['Red onion', 0.25, 'pcs', 0.50], ['Lettuce', 20, 'g', 1.30]],
+    steps: ['Slice the pepper, courgette and onion.', 'Roast with a little oil at 200 °C for 18 minutes.', 'Warm the pita and spread hummus inside.', 'Fill with roasted vegetables and lettuce.'],
+  },
+  {
+    name: 'Tomato Mozzarella Sandwich', mealType: 'lunch', calories: 460, vegetarian: true, tags: ['halal'],
+    ingredients: [['Wholegrain bread', 2, 'slices', 3.00], ['Mozzarella', 60, 'g', 6.00], ['Tomato', 1, 'pcs', 2.50], ['Fresh basil', 5, 'g', 1.50], ['Pesto', 10, 'g', 1.50]],
+    steps: ['Toast the bread lightly if you like.', 'Spread a thin layer of pesto on each slice.', 'Layer sliced tomato, mozzarella and basil.', 'Close the sandwich and cut in half.'],
+  },
+  {
+    name: 'Lemon Tuna Couscous', mealType: 'lunch', calories: 520, vegetarian: false, tags: ['halal'],
+    ingredients: [['Couscous', 75, 'g', 2.40], ['Tuna (canned)', 100, 'g', 7.50], ['Cucumber', 60, 'g', 1.50], ['Sweetcorn (canned)', 40, 'g', 1.50], ['Lemon', 0.5, 'pcs', 1.50], ['Parsley', 5, 'g', 1.00]],
+    steps: ['Cover couscous with boiling water and leave for 5 minutes.', 'Fluff with a fork and add lemon juice.', 'Drain the tuna and corn, then flake the tuna.', 'Mix with diced cucumber and parsley; season to taste.'],
+  },
+  {
+    name: 'Turkey Meatballs Marinara Pasta', mealType: 'dinner', calories: 650, vegetarian: false, tags: ['halal'],
+    ingredients: [['Turkey mince (halal)', 130, 'g', 13.00], ['Spaghetti', 90, 'g', 1.80], ['Chopped tomatoes (canned)', 150, 'g', 3.00], ['Onion', 0.5, 'pcs', 0.75], ['Garlic', 1, 'clove', 0.50], ['Breadcrumbs', 15, 'g', 1.00]],
+    steps: ['Mix turkey mince with breadcrumbs, salt and pepper, then shape into small balls.', 'Brown the meatballs in a pan and set aside.', 'Soften onion and garlic, add tomatoes and simmer for 10 minutes.', 'Return meatballs to the sauce and cook through; serve with cooked spaghetti.'],
+  },
+  {
+    name: 'Beef Taco Rice Bowl', mealType: 'dinner', calories: 690, vegetarian: false, tags: ['halal'],
+    ingredients: [['Beef mince (halal)', 120, 'g', 13.20], ['Rice', 80, 'g', 1.80], ['Kidney beans (canned)', 70, 'g', 2.30], ['Tomato', 1, 'pcs', 2.50], ['Sweetcorn (canned)', 40, 'g', 1.50], ['Taco seasoning', 1, 'tsp', 0.80]],
+    steps: ['Cook the rice according to the packet.', 'Brown the mince with taco seasoning.', 'Add drained beans and corn and heat through.', 'Serve over rice with diced tomato and a squeeze of lime.'],
+  },
+  {
+    name: 'Spinach Chickpea Coconut Curry', mealType: 'dinner', calories: 610, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Chickpeas (canned)', 120, 'g', 4.00], ['Coconut milk', 100, 'ml', 4.00], ['Spinach', 60, 'g', 4.80], ['Chopped tomatoes (canned)', 100, 'g', 2.00], ['Curry paste', 1, 'tbsp', 3.00], ['Rice', 75, 'g', 1.70]],
+    steps: ['Cook the rice.', 'Warm the curry paste in a pan for one minute.', 'Add tomatoes, chickpeas and coconut milk; simmer for 12 minutes.', 'Stir in spinach until wilted and serve with rice.'],
+  },
+  {
+    name: 'Lemon Herb Chicken Tray Bake', mealType: 'dinner', calories: 630, vegetarian: false, tags: ['halal'],
+    ingredients: [['Chicken thigh (halal)', 140, 'g', 13.00], ['Potatoes', 200, 'g', 2.40], ['Carrot', 1, 'pcs', 1.00], ['Lemon', 0.5, 'pcs', 1.50], ['Frozen green beans', 80, 'g', 2.40], ['Dried herbs', 1, 'tsp', 0.50]],
+    steps: ['Heat the oven to 200 °C and cut potatoes and carrot into bite-size pieces.', 'Toss vegetables with oil, herbs, lemon and seasoning on a tray.', 'Add chicken and roast for 25–30 minutes until cooked through.', 'Add green beans for the final 8 minutes and serve.'],
+  },
+  {
+    name: 'Lentil Shepherd’s Pie', mealType: 'dinner', calories: 580, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Green lentils (canned)', 130, 'g', 4.50], ['Potatoes', 220, 'g', 2.65], ['Carrot', 1, 'pcs', 1.00], ['Frozen peas', 50, 'g', 1.60], ['Chopped tomatoes (canned)', 100, 'g', 2.00], ['Vegetable stock cube', 0.5, 'pcs', 0.50]],
+    steps: ['Boil potatoes until tender, then mash with a splash of oat drink.', 'Simmer lentils, diced carrot, peas, tomatoes and stock for 12 minutes.', 'Spoon the lentil mixture into a small baking dish and top with mash.', 'Bake at 200 °C for 15 minutes until the top is lightly golden.'],
+  },
+  {
+    name: 'Vegetable Lasagna', mealType: 'dinner', calories: 640, vegetarian: true, tags: ['halal'],
+    ingredients: [['Lasagna sheets', 3, 'sheets', 4.50], ['Courgette', 80, 'g', 2.40], ['Spinach', 40, 'g', 3.20], ['Chopped tomatoes (canned)', 150, 'g', 3.00], ['Ricotta', 50, 'g', 4.50], ['Grated cheese', 25, 'g', 3.00]],
+    steps: ['Soften diced courgette in a pan, then add tomatoes and simmer for 8 minutes.', 'Layer tomato vegetables, lasagna sheets, spinach and ricotta in a small dish.', 'Finish with grated cheese.', 'Bake at 190 °C for 25–30 minutes until bubbling and tender.'],
+  },
+  {
+    name: 'Teriyaki Tofu Noodle Bowl', mealType: 'dinner', calories: 590, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Firm tofu', 120, 'g', 7.20], ['Egg noodles', 80, 'g', 3.20], ['Frozen broccoli', 100, 'g', 3.00], ['Carrot', 1, 'pcs', 1.00], ['Teriyaki sauce', 20, 'ml', 2.00], ['Sesame seeds', 5, 'g', 1.00]],
+    steps: ['Cook noodles according to the packet.', 'Cube and pan-fry tofu until golden.', 'Add broccoli and sliced carrot with a splash of water; cook until tender.', 'Toss with noodles and teriyaki sauce, then finish with sesame seeds.'],
+  },
+  {
+    name: 'Garlic Pork Meatball Noodles', mealType: 'dinner', calories: 670, vegetarian: false, tags: [],
+    ingredients: [['Pork mince', 120, 'g', 12.00], ['Egg noodles', 85, 'g', 3.40], ['Stir-fry vegetables', 120, 'g', 4.80], ['Soy sauce', 1, 'tbsp', 1.00], ['Garlic', 1, 'clove', 0.50], ['Breadcrumbs', 10, 'g', 0.70]],
+    steps: ['Mix pork mince with breadcrumbs and half the crushed garlic; shape into meatballs.', 'Brown meatballs in a pan and cook through.', 'Cook noodles, then stir-fry vegetables with remaining garlic.', 'Toss noodles and vegetables with soy sauce and serve with meatballs.'],
+  },
+  {
+    name: 'Apple Peanut Butter Rice Cakes', mealType: 'snack', calories: 290, vegetarian: true, tags: ['vegan', 'halal'],
+    ingredients: [['Rice cakes', 3, 'pcs', 4.00], ['Peanut butter', 20, 'g', 3.50], ['Apple', 0.5, 'pcs', 2.50], ['Chia seeds', 5, 'g', 1.50]],
+    steps: ['Spread peanut butter over the rice cakes.', 'Thinly slice the apple and arrange on top.', 'Sprinkle with chia seeds and serve.'],
+  },
+  {
+    name: 'Berry Yogurt Smoothie Bowl', mealType: 'snack', calories: 320, vegetarian: true, tags: ['halal'],
+    ingredients: [['Greek yogurt', 120, 'g', 4.20], ['Frozen berries', 100, 'g', 5.00], ['Banana', 0.5, 'pcs', 1.25], ['Granola', 20, 'g', 1.75], ['Honey', 1, 'tsp', 0.50]],
+    steps: ['Blend yogurt with berries and banana until thick and smooth.', 'Pour into a bowl.', 'Top with granola and a small drizzle of honey.'],
+  },
+];
+
 // ---------- Workouts ----------
 // Exercises: [name, sets, reps, instructions]
 const WORKOUTS = [
@@ -256,6 +362,71 @@ const WORKOUTS = [
   },
 ];
 
+const ADDITIONAL_WORKOUTS = [
+  {
+    name: 'Low-Impact Cardio Circuit', goal: 'lose weight', difficulty: 'easy', minutes: 20, beginner: true,
+    exercises: [
+      ['March in Place', 3, 30, 'Stand tall and march steadily, lifting each knee comfortably while swinging your arms.'],
+      ['Step Jacks', 3, 20, 'Step one foot out at a time while raising your arms, then return to the centre.'],
+      ['Sit-to-Stand Squats', 3, 12, 'Lower onto a sturdy chair with control, then press through your feet to stand.'],
+      ['Standing Knee Drives', 3, 16, 'Drive one knee up at a time, keeping your chest lifted and core gently braced.'],
+      ['Wall Push-ups', 3, 12, 'Place hands on a wall at chest height, bend your elbows toward it, then press away.'],
+    ],
+  },
+  {
+    name: 'Cardio Endurance Intervals', goal: 'lose weight', difficulty: 'medium', minutes: 30, beginner: false,
+    exercises: [
+      ['Fast Feet', 4, 30, 'Run lightly in place with quick, small steps and soft knees.'],
+      ['Reverse Lunges', 4, 12, 'Step one foot back, lower both knees with control, then drive through the front foot to stand. Each side.'],
+      ['Mountain Climbers', 4, 20, 'From a strong plank, alternate driving your knees toward your chest at a steady pace.'],
+      ['Skater Steps', 4, 16, 'Step laterally and reach the trailing foot behind you, alternating sides with balance.'],
+      ['Plank Shoulder Taps', 3, 16, 'Hold a high plank and tap each shoulder with the opposite hand while keeping hips steady.'],
+    ],
+  },
+  {
+    name: 'Foundations Full-Body Strength', goal: 'build muscle', difficulty: 'easy', minutes: 30, beginner: true,
+    exercises: [
+      ['Tempo Squats', 3, 12, 'Lower into a comfortable squat for three counts, then stand steadily.'],
+      ['Incline Push-ups', 3, 10, 'Place hands on a sturdy bench or table, keep your body straight, lower your chest and press up.'],
+      ['Backpack Rows', 3, 12, 'Hold a lightly loaded backpack, hinge at the hips with a flat back, and pull it toward your ribs.'],
+      ['Glute Bridges', 3, 15, 'Lie on your back with knees bent, squeeze your glutes to lift your hips, then lower slowly.'],
+      ['Dead Bugs', 3, 10, 'Lie on your back with arms up and knees bent; slowly extend opposite arm and leg, then switch.'],
+    ],
+  },
+  {
+    name: 'Full-Body Strength Builder', goal: 'build muscle', difficulty: 'medium', minutes: 40, beginner: false,
+    exercises: [
+      ['Bulgarian Split Squats', 4, 10, 'Place your rear foot on a low stable seat, lower under control, and press through the front foot. Each side.'],
+      ['Push-ups', 4, 12, 'Keep your body in a straight line, lower your chest toward the floor, then press back up.'],
+      ['Backpack Rows', 4, 12, 'Hinge forward with a flat back and pull a loaded backpack toward your waist.'],
+      ['Single-Leg Glute Bridges', 3, 12, 'Lift your hips using one planted foot while keeping the other leg raised. Each side.'],
+      ['Pike Push-ups', 3, 8, 'Form an inverted V, bend your elbows to lower your head toward the floor, then press back up.'],
+      ['Side Plank', 3, 20, 'Support yourself on one forearm and the side of your foot, keeping your body straight. Each side.'],
+    ],
+  },
+  {
+    name: 'Mobility and Core Reset', goal: 'stay healthy', difficulty: 'easy', minutes: 20, beginner: true,
+    exercises: [
+      ['Cat-Cow Stretch', 2, 10, 'On hands and knees, gently round your back, then arch it while lifting your chest.'],
+      ['Bird Dogs', 3, 10, 'On hands and knees, extend the opposite arm and leg, pause, then switch sides.'],
+      ['Glute Bridges', 3, 12, 'Lie on your back with knees bent, lift your hips by squeezing your glutes, then lower slowly.'],
+      ['Standing Hip Circles', 2, 10, 'Stand tall and make slow, comfortable circles with your hips in both directions.'],
+      ['Dead Bugs', 2, 10, 'Lie on your back and slowly lower opposite arm and leg while keeping your lower back comfortable.'],
+    ],
+  },
+  {
+    name: 'Everyday Strength and Balance', goal: 'stay healthy', difficulty: 'medium', minutes: 30, beginner: true,
+    exercises: [
+      ['Step-ups', 3, 12, 'Step onto a low, sturdy step and stand tall, then step down with control. Alternate legs.'],
+      ['Chair Squats', 3, 15, 'Lower toward a sturdy chair, lightly tap the seat, then stand by pressing through your feet.'],
+      ['Incline Push-ups', 3, 12, 'Use a sturdy counter or bench, keep your body straight, lower your chest, then press away.'],
+      ['Calf Raises', 3, 15, 'Stand tall and rise onto the balls of your feet, pause, then lower slowly.'],
+      ['Single-Leg Balance', 3, 20, 'Stand beside a wall for support and balance on one foot with a soft knee. Each side.'],
+      ['Standing Torso Rotations', 2, 12, 'Stand with feet hip-width apart and gently rotate your upper body side to side.'],
+    ],
+  },
+];
+
 // A video search link so every exercise has an optional "watch how" link
 function mediaUrlFor(exerciseName) {
   return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(`${exerciseName} exercise how to`);
@@ -280,14 +451,16 @@ function resetSchema(db) {
   db.exec(fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8'));
 }
 
-function insertRecipes(db) {
+function insertRecipes(db, recipes = [...RECIPES, ...ADDITIONAL_RECIPES]) {
   const insertRecipe = db.prepare(`INSERT INTO Recipes (RecipeName, MealType, PricePerPortion, Calories, IsVegetarian, DateAdded)
                                    VALUES (?, ?, ?, ?, ?, ?)`);
+  const findRecipe = db.prepare('SELECT 1 FROM Recipes WHERE RecipeName = ?');
   const insertIngredient = db.prepare(`INSERT INTO RecipeIngredient (RecipeID, IngredientName, Quantity, Unit, Cost) VALUES (?, ?, ?, ?, ?)`);
   const insertStep = db.prepare('INSERT INTO RecipeStep (RecipeID, StepNumber, Instruction) VALUES (?, ?, ?)');
   const insertTag = db.prepare('INSERT INTO RecipeDietTag (RecipeID, DietType) VALUES (?, ?)');
 
-  for (const recipe of RECIPES) {
+  for (const recipe of recipes) {
+    if (findRecipe.get(recipe.name)) continue;
     const price = roundKr(recipe.ingredients.reduce((sum, ingredient) => sum + ingredient[3], 0));
     const { lastInsertRowid: recipeId } = insertRecipe.run(
       recipe.name, recipe.mealType, price, recipe.calories, recipe.vegetarian ? 1 : 0, daysAgo(60),
@@ -296,15 +469,18 @@ function insertRecipes(db) {
     recipe.steps.forEach((instruction, index) => insertStep.run(recipeId, index + 1, instruction));
     for (const tag of recipe.tags) insertTag.run(recipeId, tag);
   }
+  ensureRecipeImages(db);
 }
 
-function insertWorkouts(db) {
+function insertWorkouts(db, workouts = [...WORKOUTS, ...ADDITIONAL_WORKOUTS]) {
   const insertWorkout = db.prepare(`INSERT INTO Workouts (WorkoutName, Goal, Difficulty, DurationMinutes, IsBeginnerFriendly, DateCreated)
                                     VALUES (?, ?, ?, ?, ?, ?)`);
+  const findWorkout = db.prepare('SELECT 1 FROM Workouts WHERE WorkoutName = ?');
   const insertExercise = db.prepare(`INSERT INTO WorkoutExercise (WorkoutID, ExerciseName, Sets, Reps, Instructions, MediaURL)
                                      VALUES (?, ?, ?, ?, ?, ?)`);
 
-  for (const workout of WORKOUTS) {
+  for (const workout of workouts) {
+    if (findWorkout.get(workout.name)) continue;
     const { lastInsertRowid: workoutId } = insertWorkout.run(
       workout.name, workout.goal, workout.difficulty, workout.minutes, workout.beginner ? 1 : 0, daysAgo(60),
     );
@@ -367,11 +543,20 @@ function seedIfEmpty(db) {
   return true;
 }
 
-module.exports = { seedDatabase, seedIfEmpty };
+// Add only the newer catalog entries to a populated database; safe to run on every app start.
+function ensureAdditionalRecipes(db) {
+  db.transaction(() => insertRecipes(db, ADDITIONAL_RECIPES))();
+}
+
+function ensureAdditionalWorkouts(db) {
+  db.transaction(() => insertWorkouts(db, ADDITIONAL_WORKOUTS))();
+}
+
+module.exports = { seedDatabase, seedIfEmpty, ensureAdditionalRecipes, ensureAdditionalWorkouts };
 
 // `npm run seed` runs this file directly
 if (require.main === module) {
   const db = require('./database');
   seedDatabase(db);
-  console.log(`Database seeded: ${RECIPES.length} recipes, ${WORKOUTS.length} workouts, ${STUDENTS.length} students, 1 admin.`);
+  console.log(`Database seeded: ${RECIPES.length + ADDITIONAL_RECIPES.length} recipes, ${WORKOUTS.length} workouts, ${STUDENTS.length} students, 1 admin.`);
 }

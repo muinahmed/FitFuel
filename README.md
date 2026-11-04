@@ -32,9 +32,24 @@ All styling is in `public/css/style.css`, built on the tokens at the top of the 
 - **Type:** system fonts only (works offline). Headings use the system's rounded/display face at heavy weight; numbers use tabular digits so amounts line up.
 - **Shape:** a radius hierarchy instead of one radius everywhere – hero 28px, cards 20px, chips and inputs 12–14px, buttons pill-shaped.
 - **Icons:** hand-drawn line icons in `public/js/icons.js` – `icon('flame')` in scripts or `<span data-icon="flame"></span>` in HTML. Price, calories and minutes are shown as icon + value instead of "A · B" text.
-- **Recipe pictures:** a recipe shows its photo when an admin has uploaded one; otherwise it gets a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`). Exercises can have a photo too.
+- **Recipe pictures:** every seeded recipe has a photo (`public/img/recipes/`, linked to the recipes by `db/recipeImages.js`). An admin can replace it with an uploaded photo; a recipe with no photo at all shows a food emoji on a tile tinted by meal type (`foodTileHtml` in `public/js/recipeDetail.js`). Exercises can have an uploaded photo too.
+- **Images:** all photos in the app are AI-generated – see [Image credits](#image-credits).
 - **Favicon:** the emblem from the logo (`public/favicon.ico`, `public/img/favicon-192.png`, `public/img/apple-touch-icon.png`).
 - **Phones:** a bottom tab bar for the five main sections on student pages, and a Menu button for everything (including Profile and Log out). Admin pages have a dark header so admins always know where they are.
+
+## Image credits
+
+All photos in FitFuel are **AI-generated** for this university project. They are illustrations, not pictures of real dishes cooked from the recipes, real people or real products.
+
+| Images | Where they are used |
+|---|---|
+| `public/img/recipes/01.png` – `46.png` (46 recipe photos) | Recipe cards, the recipe dialog, the meal plan, Home and the admin recipe list |
+| `public/img/workouts/weight-loss.png`, `strength.png`, `wellness.png` | Workout plans, one photo per goal (lose weight, build muscle, stay healthy) |
+| `public/img/home-banner-photo.png` | Welcome banner on the landing page and Home |
+| `public/img/meal-prep-banner.png` | Bottom banner on Home |
+| `public/img/budget-banner.png` | Background of the weekly budget card on Home |
+
+The FitFuel logo and favicon (`public/img/logo.png`, `public/favicon.ico`, `public/img/favicon-192.png`, `public/img/apple-touch-icon.png`) are the team's logo, not photos. Photos that admins upload later are stored in `public/uploads/` and are not covered by this list.
 
 ## Install, run, seed and test
 
@@ -163,7 +178,7 @@ These supporting tables are needed for the features. No columns were added to th
 
 ## Seed data
 
-`npm run seed` creates 1 admin, 3 demo students (with profiles, budgets 300 / 450 / 600 kr), 26 recipes (breakfast, lunch, dinner and snack, 10–45 kr per portion, each with ingredients, costs and 3–6 steps, vegetarian / vegan / halal mix), 9 workouts (3 per goal, mixed difficulty, 4–6 exercises each with a "how to" video search link), and 6 weeks of weight and workout logs for Emma.
+`npm run seed` creates 1 admin, 3 demo students (with profiles, budgets 300 / 450 / 600 kr), 46 recipes (breakfast, lunch, dinner and snack, 10–45 kr per portion, each with ingredients, costs, steps and a photo, vegetarian / vegan / halal mix), 15 workouts (5 per goal, mixed difficulty, 4–6 exercises each with a "how to" video search link), and 6 weeks of weight and workout logs for Emma.
 
 ## API routes
 
@@ -304,7 +319,7 @@ db/recipeQueries.js    Recipe search/detail queries shared by the student and ad
 routes/                One file per component area (header comment names the owner); routes/admin/ for the admin API
 middleware/            requireLogin (students) and requireAdmin (admins)
 utils/                 Shared helpers: dates, validation, passwords, sessions, search, diet filter
-public/                Student pages, 404.html, css/style.css, img/, js/ (one file per page + shared api.js, nav.js, recipeDetail.js, weekToggle.js, charts.js)
+public/                Student pages, 404.html, css/style.css, img/, js/ (one file per page + shared api.js, nav.js, icons.js, recipeDetail.js, weekToggle.js, charts.js, countUp.js)
 public/admin/          Admin pages (<body data-area="admin"> picks the admin header in nav.js); scripts in public/js/admin/ (forms.js + one per page)
 tests/                 API tests (node:test + supertest)
 ```

@@ -24,7 +24,7 @@ describe('Start-up on an empty database', () => {
     assert.equal(count(db, 'Admins'), 1);
     assert.equal(count(db, 'Users'), 3);
     assert.ok(count(db, 'Recipes') >= 24);
-    assert.equal(count(db, 'Workouts'), 9);
+    assert.equal(count(db, 'Workouts'), 15);
   });
 
   test('a database that already has data is never reseeded or wiped', () => {

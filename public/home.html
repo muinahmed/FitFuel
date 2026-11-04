@@ -25,11 +25,11 @@
     </div>
     <div id="page-message" class="message" role="status"></div>
 
-    <section class="hero-card" aria-labelledby="budget-heading">
+    <section class="hero-card hero-card--photo" aria-labelledby="budget-heading">
       <div class="hero-card__text">
         <h2 id="budget-heading">Weekly budget</h2>
         <p class="hero-card__figure" id="budget-figure">–</p>
-        <div id="budget-plan"><p>Loading…</p></div>
+        <div id="budget-plan"><span class="skeleton__line skeleton__line--light" aria-hidden="true"></span><span class="visually-hidden">Loading your budget…</span></div>
       </div>
       <div id="budget-ring"></div>
     </section>
@@ -40,7 +40,7 @@
           <h2 id="meals-heading">Today's meals</h2>
           <span class="icon-chip" data-icon="meals"></span>
         </div>
-        <div id="todays-meals"><p class="muted">Loading…</p></div>
+        <div id="todays-meals" data-skeleton="row 2"></div>
       </section>
 
       <section class="card" aria-labelledby="workout-heading">
@@ -48,15 +48,15 @@
           <h2 id="workout-heading">Next workout</h2>
           <span class="icon-chip" data-icon="dumbbell"></span>
         </div>
-        <div id="next-workout"><p class="muted">Loading…</p></div>
+        <div id="next-workout" data-skeleton="row 2"></div>
       </section>
 
-      <section class="card" aria-labelledby="week-heading">
+      <section class="card home-progress-card" aria-labelledby="week-heading">
         <div class="card__heading">
           <h2 id="week-heading">Your progress</h2>
           <span class="icon-chip" data-icon="chart"></span>
         </div>
-        <div id="week-stats" class="stat-list"><p class="muted">Loading…</p></div>
+        <div id="week-stats" class="stat-list" data-skeleton="stat 3"></div>
       </section>
     </div>
 
@@ -67,9 +67,20 @@
       <a class="quick-link" href="/progress.html"><span class="icon-chip" data-icon="scale"></span>Log your weight</a>
       <a class="quick-link" href="/profile.html"><span class="icon-chip" data-icon="user"></span>Your profile</a>
     </nav>
+
+    <section class="bottom-photo-banner" aria-labelledby="bottom-banner-title">
+      <img class="bottom-photo-banner__image" src="/img/meal-prep-banner.png" alt="Meal prep containers filled with vegetables, greens, grains and lentils" width="2060" height="764" loading="lazy">
+      <div class="bottom-photo-banner__content">
+        <p class="bottom-photo-banner__eyebrow">A FRESH START, EVERY WEEK</p>
+        <h2 id="bottom-banner-title">Good weeks start with a plan.</h2>
+        <p>Find easy recipes that fit your budget and the way you like to eat.</p>
+        <a class="btn" href="/recipes.html">Explore recipes</a>
+      </div>
+    </section>
   </main>
   <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/countUp.js"></script>
   <script src="/js/nav.js"></script>
   <script src="/js/recipeDetail.js"></script>
   <script src="/js/home.js"></script>

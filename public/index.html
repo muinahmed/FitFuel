@@ -27,36 +27,61 @@
       </div>
 
       <!-- A picture of the app, built from demo data (decorative, so hidden from screen readers) -->
-      <div class="preview" aria-hidden="true">
-        <div class="preview__card preview__card--hero">
-          <div class="ring" style="width:96px;height:96px">
-            <svg width="96" height="96" focusable="false">
-              <circle class="ring__track" cx="48" cy="48" r="43" fill="none" stroke-width="10"/>
-              <circle class="ring__value" cx="48" cy="48" r="43" fill="none" stroke-width="10" stroke-linecap="round"
-                      stroke-dasharray="270.2" stroke-dashoffset="37.8"/>
-            </svg>
-            <div class="ring__centre"><span class="ring__number" style="font-size:1.2rem">86%</span></div>
+      <div class="app-preview" aria-hidden="true">
+        <div class="app-preview__screen">
+          <div class="app-preview__header">
+            <div>
+              <p class="app-preview__label">Food budget this week</p>
+              <p class="app-preview__figure">43 kr <span>left</span></p>
+              <p class="app-preview__sub">257 of 300 kr planned</p>
+            </div>
+            <div class="ring">
+              <svg viewBox="0 0 132 132" width="100%" height="100%" focusable="false">
+                <defs><linearGradient id="landing-progress-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#B7E84B"/><stop offset="52%" stop-color="#48C58A"/><stop offset="100%" stop-color="#48B8D1"/></linearGradient></defs>
+                <circle class="ring__track" cx="66" cy="66" r="60" fill="none" stroke-width="12"/>
+                <circle class="ring__value" cx="66" cy="66" r="60" fill="none" stroke-width="12" stroke="url(#landing-progress-gradient)"
+                        stroke-linecap="round" stroke-dasharray="376.99" stroke-dashoffset="52.78"
+                        style="--ring-start:376.99;--ring-end:52.78"/>
+              </svg>
+              <div class="ring__centre"><span class="ring__number" data-count-to="86" data-count-suffix="%">86%</span></div>
+            </div>
           </div>
-          <div>
-            <p class="preview__title">43.00 kr left</p>
-            <p>of a 300 kr food budget this week</p>
+          <div class="app-preview__body">
+            <p class="app-preview__section">Today's meals</p>
+            <div class="app-preview__row">
+              <img src="/img/recipes/08.png" alt="">
+              <div><p class="app-preview__name">Red Lentil Soup</p><p class="app-preview__meta">Lunch</p></div>
+              <span class="app-preview__price">11 kr</span>
+            </div>
+            <div class="app-preview__row">
+              <img src="/img/recipes/22.png" alt="">
+              <div><p class="app-preview__name">Sweet Potato Chickpea Curry</p><p class="app-preview__meta">Dinner</p></div>
+              <span class="app-preview__price">23 kr</span>
+            </div>
+            <p class="app-preview__section">Next workout</p>
+            <div class="app-preview__row">
+              <img src="/img/workouts/weight-loss.png" alt="">
+              <div><p class="app-preview__name">Beginner Fat-Burn Circuit</p><p class="app-preview__meta">Monday, 20 minutes</p></div>
+              <span class="app-preview__tag">Easy</span>
+            </div>
           </div>
-        </div>
-        <div class="preview__card">
-          <div class="preview__row">
-            <span class="food-tile food-tile--lunch">🍲</span>
-            <div><p>Red Lentil Soup</p><span class="muted">Lunch, 11.00 kr</span></div>
+          <div class="app-preview__badge">
+            <span class="icon-chip" data-icon="cart"></span>
+            <div><p class="app-preview__name">Shopping list ready</p><p class="app-preview__meta">36 items, 257 kr</p></div>
+            <span class="app-preview__arrow" data-icon="check"></span>
           </div>
-          <div class="preview__row">
-            <span class="food-tile food-tile--dinner">🍛</span>
-            <div><p>Sweet Potato Chickpea Curry</p><span class="muted">Dinner, 23.00 kr</span></div>
-          </div>
-        </div>
-        <div class="preview__card preview__row">
-          <span class="icon-chip" data-icon="dumbbell"></span>
-          <div><p>Beginner Fat-Burn Circuit</p><span class="muted">Monday, 20 minutes</span></div>
         </div>
       </div>
+    </section>
+
+    <section class="welcome-banner landing-banner" aria-label="Plan affordable healthy meals">
+      <div class="welcome-banner__copy">
+        <span class="welcome-banner__eyebrow">HEALTHY CAN FIT YOUR BUDGET</span>
+        <p class="welcome-banner__title">Eat well.<br><span>Feel good.</span></p>
+        <p class="welcome-banner__text">Build a meal plan around your budget, then get moving with a simple workout plan.</p>
+        <a class="welcome-banner__link" href="/signup.html">Start planning <span aria-hidden="true">↗</span></a>
+      </div>
+      <img class="welcome-banner__photo" src="/img/home-banner-photo.png" alt="A colorful grain bowl with greens and roasted vegetables on a kitchen table" width="2060" height="764">
     </section>
 
     <section class="features" aria-label="What FitFuel does">
@@ -76,5 +101,6 @@
   </main>
   <footer class="site-footer">FitFuel, made by The Agile Trio</footer>
   <script src="/js/icons.js"></script>
+  <script src="/js/countUp.js"></script>
 </body>
 </html>

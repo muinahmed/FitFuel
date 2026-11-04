@@ -10,6 +10,7 @@ const UPLOAD_URL = '/uploads/';
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 // Only paths this module created are accepted, e.g. /uploads/3f9c…e1.webp
 const UPLOAD_PATH_PATTERN = /^\/uploads\/[a-f0-9]{32}\.(jpg|png|webp)$/;
+const BUNDLED_RECIPE_IMAGE_PATTERN = /^\/img\/recipes\/(0[1-9]|[1-3][0-9]|4[0-6])\.png$/;
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -39,6 +40,8 @@ function filePathFor(webPath) {
 // the path when it is an existing upload, or undefined when it is not allowed
 function readImagePath(value) {
   if (value === undefined || value === null || value === '') return null;
+  if (typeof value === 'string' && BUNDLED_RECIPE_IMAGE_PATTERN.test(value)
+    && fs.existsSync(path.join(__dirname, '..', 'public', value.slice(1)))) return value;
   if (typeof value !== 'string' || !UPLOAD_PATH_PATTERN.test(value) || !fs.existsSync(filePathFor(value))) return undefined;
   return value;
 }
@@ -46,6 +49,7 @@ function readImagePath(value) {
 // Delete uploaded files that no recipe or exercise uses any more
 function deleteUnusedImages(webPaths) {
   for (const webPath of new Set(webPaths.filter(Boolean))) {
+    if (!UPLOAD_PATH_PATTERN.test(webPath)) continue;
     if (isRecipeImage.get(webPath) || isExerciseImage.get(webPath)) continue;
     fs.rmSync(filePathFor(webPath), { force: true });
   }

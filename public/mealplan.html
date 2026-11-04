@@ -29,11 +29,11 @@
 
     <section class="card plan-summary" aria-labelledby="summary-heading">
       <h2 id="summary-heading" class="visually-hidden">Cost this week</h2>
-      <div id="cost-summary" class="plan-summary__cost"><p class="muted">Loading your plan…</p></div>
+      <div id="cost-summary" class="plan-summary__cost"><span class="skeleton__line skeleton__line--title" aria-hidden="true"></span><span class="skeleton__line" aria-hidden="true"></span><span class="visually-hidden">Loading your plan…</span></div>
       <a class="btn btn--secondary" href="/shopping.html" id="shopping-link" hidden><span data-icon="cart"></span>Shopping list</a>
     </section>
 
-    <div id="plan-grid" class="plan-grid"></div>
+    <div id="plan-grid" class="plan-grid" data-skeleton="card 4"></div>
   </main>
   <script src="/js/icons.js"></script>
   <script src="/js/api.js"></script>

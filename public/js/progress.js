@@ -8,15 +8,20 @@ const logMessage = document.getElementById('log-message');
 const entriesMessage = document.getElementById('entries-message');
 let weights = [];
 let weeks = [];
+const statsReady = { weights: false, workouts: false };
 
 const formatKg = (kg) => `${Number(kg).toFixed(1)} kg`;
 const shortDate = (date) => formatDate(date, { day: 'numeric', month: 'short', year: 'numeric' });
 
-function statTileHtml(iconName, value, label) {
+// value can be a number (counts up from zero) or text
+function statTileHtml(iconName, value, label, { decimals = 0, suffix = '' } = {}) {
+  const shown = typeof value === 'number'
+    ? `<span data-count-to="${value}" data-count-decimals="${decimals}" data-count-suffix="${suffix}">${value.toFixed(decimals)}${suffix}</span>`
+    : value;
   return `
     <div class="card stat-tile">
       <span class="icon-chip">${icon(iconName, 22)}</span>
-      <div><p class="stat-line__value">${value}</p><p class="stat-line__label">${label}</p></div>
+      <div><p class="stat-line__value">${shown}</p><p class="stat-line__label">${label}</p></div>
     </div>`;
 }
 
@@ -26,7 +31,7 @@ function renderStats() {
   if (weights.length) {
     const first = weights[0];
     const latest = weights[weights.length - 1];
-    tiles.push(statTileHtml('scale', formatKg(latest.weightKg), 'latest weight'));
+    tiles.push(statTileHtml('scale', latest.weightKg, 'latest weight', { decimals: 1, suffix: ' kg' }));
     if (weights.length > 1) {
       const change = Math.round((latest.weightKg - first.weightKg) * 10) / 10;
       tiles.push(statTileHtml('chart', change === 0 ? 'No change' : `${change > 0 ? '+' : '−'}${formatKg(Math.abs(change))}`,
@@ -34,10 +39,16 @@ function renderStats() {
     }
   }
   if (weeks.length) {
-    tiles.push(statTileHtml('trophy', String(weeks[weeks.length - 1].count), 'workouts this week'));
-    tiles.push(statTileHtml('calendar', String(weeks.reduce((sum, week) => sum + week.count, 0)), 'workouts in 8 weeks'));
+    tiles.push(statTileHtml('trophy', weeks[weeks.length - 1].count, 'workouts this week'));
+    tiles.push(statTileHtml('calendar', weeks.reduce((sum, week) => sum + week.count, 0), 'workouts in 8 weeks'));
   }
-  document.getElementById('progress-stats').innerHTML = tiles.join('');
+  // Wait until both weights and workouts have loaded, so the tiles appear (and count up) once
+  if (!statsReady.weights || !statsReady.workouts) return;
+  const container = document.getElementById('progress-stats');
+  container.innerHTML = tiles.length
+    ? tiles.join('')
+    : emptyStateHtml({ compact: true, iconName: 'chart', title: 'Your progress starts here', text: 'Log your weight below or finish a workout to see your numbers.' });
+  animateProgressCounters(container);
 }
 
 function renderWeightChart() {
@@ -90,11 +101,12 @@ function editRowHtml(entry) {
 function renderWeightTable() {
   weightTable.innerHTML = weights.length
     ? [...weights].reverse().map(rowHtml).join('')
-    : '<tr><td colspan="3" class="placeholder">No weight entries yet.</td></tr>';
+    : '<tr><td colspan="3" class="placeholder">No weight entries yet. Add your first one above.</td></tr>';
 }
 
 async function loadWeights() {
   weights = await api('/progress/weights');
+  statsReady.weights = true;
   renderWeightTable();
   renderWeightChart();
   renderStats();
@@ -102,6 +114,7 @@ async function loadWeights() {
 
 async function loadWorkoutChart() {
   weeks = await api('/progress/workouts-per-week');
+  statsReady.workouts = true;
   renderStats();
   const label = (week) => formatDate(week.weekStart, { day: 'numeric', month: 'short' });
   const total = weeks.reduce((sum, week) => sum + week.count, 0);
@@ -123,10 +136,11 @@ weightForm.addEventListener('submit', (event) => {
   clearMessage(logMessage);
   withBusyButton(weightForm, async () => {
     try {
-      await api('/progress/weights', { method: 'POST', body: Object.fromEntries(new FormData(weightForm)) });
+      const saved = await api('/progress/weights', { method: 'POST', body: Object.fromEntries(new FormData(weightForm)) });
       weightForm.weightKg.value = '';
       showMessage(logMessage, 'Weight saved.', 'success');
       await loadWeights();
+      flash(weightTable.querySelector(`tr[data-id="${saved.weightLogId}"]`), 'highlight');
     } catch (error) {
       showMessage(logMessage, error.message);
     }

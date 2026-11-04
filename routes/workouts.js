@@ -9,6 +9,11 @@ const { readNumber } = require('../utils/validation');
 
 const router = express.Router();
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+const GOAL_IMAGES = {
+  'lose weight': '/img/workouts/weight-loss.png',
+  'build muscle': '/img/workouts/strength.png',
+  'stay healthy': '/img/workouts/wellness.png',
+};
 
 // Training days per week -> which weekdays to train (spread out to leave rest days)
 const TRAINING_SCHEDULES = {
@@ -51,12 +56,14 @@ const getHistory = db.prepare(`
 // and nextSession is the first session from today on that is not done yet.
 function buildPlan(userId) {
   const { goal, trainingDays } = getProfile.get(userId);
-  const empty = { goal, trainingDays, sessions: [], nextSession: null };
+  const goalImageUrl = GOAL_IMAGES[goal] || null;
+  const empty = { goal, goalImageUrl, trainingDays, sessions: [], nextSession: null };
   if (!goal || !trainingDays) return empty;
 
   const workouts = getWorkoutsForGoal.all(goal).map((workout) => ({
     ...workout,
     isBeginnerFriendly: Boolean(workout.isBeginnerFriendly),
+    imageUrl: GOAL_IMAGES[workout.goal],
     exercises: getExercises.all(workout.workoutId),
   }));
   if (workouts.length === 0) return empty;
@@ -77,10 +84,10 @@ function buildPlan(userId) {
   // After this week's last session, the next one is the first session next week
   const upcoming = sessions.find((session) => !session.isDone && session.date >= today())
     || { ...sessions[0], date: addDays(sessions[0].date, 7), isToday: false, isDone: false };
-  const { workoutId, workoutName, durationMinutes, difficulty } = upcoming.workout;
-  const nextSession = { day: upcoming.day, date: upcoming.date, isToday: upcoming.isToday, workout: { workoutId, workoutName, durationMinutes, difficulty } };
+  const { workoutId, workoutName, durationMinutes, difficulty, imageUrl } = upcoming.workout;
+  const nextSession = { day: upcoming.day, date: upcoming.date, isToday: upcoming.isToday, workout: { workoutId, workoutName, durationMinutes, difficulty, imageUrl } };
 
-  return { goal, trainingDays, sessions, nextSession };
+  return { goal, goalImageUrl, trainingDays, sessions, nextSession };
 }
 
 // GET /api/workouts/plan – this week's workout plan with exercises

@@ -39,9 +39,11 @@ async function loadBudget() {
     figure.textContent = plan.overBudget ? `${formatKr(-left)} over` : `${formatKr(left)} left`;
     details.innerHTML = `<p>${formatKr(plan.totalCost)} planned of ${formatKr(plan.weeklyBudget)} for ${weekName}.</p>${planLink}`;
     const used = plan.totalCost / plan.weeklyBudget;
+    const usedPercent = Math.round(used * 100);
     ring.innerHTML = progressRingHtml(used,
-      `<span class="ring__number">${Math.round(used * 100)}%</span><span class="ring__label">of budget</span>`,
+      `<span class="ring__number" data-count-to="${usedPercent}" data-count-suffix="%">0%</span><span class="ring__label">of budget</span>`,
       { over: plan.overBudget });
+    animateProgressCounters(ring);
   } catch (error) {
     details.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
   }
@@ -54,12 +56,20 @@ async function loadTodaysMeals() {
     const plan = await api('/mealplans?week=this');
     const today = plan.days.find((day) => day.date === todayString());
     if (!today || (!today.lunch && !today.dinner)) {
-      container.innerHTML = '<p class="placeholder">No meals planned for today.</p><a class="btn btn--secondary" href="/mealplan.html?week=this">Plan this week</a>';
+      container.innerHTML = emptyStateHtml({
+        compact: true, iconName: 'meals', title: 'No meals planned for today',
+        text: 'Generate a plan and your lunch and dinner show up here.',
+        action: { href: '/mealplan.html?week=this', label: 'Plan this week' },
+      });
       return;
     }
     const mealRow = (slot, meal) => (meal ? `
       <div class="meal-row">
-        ${foodTileHtml({ ...meal, mealType: slot.toLowerCase() })}
+        ${foodTileHtml({
+          ...meal,
+          mealType: slot.toLowerCase(),
+          imageUrl: meal.imageUrl || (slot === 'Lunch' ? '/img/home-banner-photo.png' : '/img/meal-prep-banner.png'),
+        })}
         <div class="meal-row__text">
           <span class="meal-row__slot">${slot}</span>
           <span class="meal-row__name">${escapeHtml(meal.recipeName)}</span>
@@ -67,7 +77,7 @@ async function loadTodaysMeals() {
         <span class="muted num">${formatKr(meal.pricePerPortion)}</span>
       </div>` : '');
     container.innerHTML = `<div class="meal-list">${mealRow('Lunch', today.lunch)}${mealRow('Dinner', today.dinner)}</div>
-      <a href="/mealplan.html?week=this">See the whole week</a>`;
+      <a class="btn btn--secondary btn--small home-card-action" href="/mealplan.html?week=this">See the whole week <span aria-hidden="true">→</span></a>`;
   } catch (error) {
     container.innerHTML = `<p class="placeholder">${escapeHtml(error.message)}</p>`;
   }
@@ -79,12 +89,17 @@ async function loadNextWorkout() {
   try {
     const plan = await api('/workouts/plan');
     if (!plan.nextSession) {
-      container.innerHTML = '<p class="placeholder">No workout plan yet.</p><a class="btn btn--secondary" href="/workouts.html">Choose training days</a>';
+      container.innerHTML = emptyStateHtml({
+        compact: true, iconName: 'dumbbell', title: 'No workout plan yet',
+        text: 'Pick how many days a week you want to train.',
+        action: { href: '/workouts.html', label: 'Choose training days' },
+      });
       return plan;
     }
     const { day, isToday, workout } = plan.nextSession;
     container.innerHTML = `
       <div class="workout-teaser">
+        ${workout.imageUrl ? `<img class="workout-teaser__photo" src="${escapeHtml(workout.imageUrl)}" alt="" loading="lazy">` : ''}
         <div>
           <p class="workout-teaser__name">${escapeHtml(workout.workoutName)}</p>
           <p class="meta">
@@ -118,11 +133,11 @@ async function loadProgressSummary(workoutPlanPromise) {
     const lines = [];
     if (workoutPlan && workoutPlan.sessions.length) {
       const done = workoutPlan.sessions.filter((session) => session.isDone).length;
-      lines.push(statLineHtml('trophy', `${done} of ${workoutPlan.sessions.length}`, 'workouts done this week'));
+      lines.push(statLineHtml('trophy', `<span data-count-to="${done}" data-count-suffix=" of ${workoutPlan.sessions.length}">0 of ${workoutPlan.sessions.length}</span>`, 'workouts done this week'));
     }
     if (weights.length) {
       const latest = weights[weights.length - 1];
-      lines.push(statLineHtml('scale', `${latest.weightKg.toFixed(1)} kg`,
+      lines.push(statLineHtml('scale', `<span data-count-to="${latest.weightKg.toFixed(1)}" data-count-decimals="1" data-count-suffix=" kg">0.0 kg</span>`,
         `latest weight, ${formatDate(latest.logDate, { day: 'numeric', month: 'short' })}`));
       if (weights.length > 1) {
         const change = Math.round((latest.weightKg - weights[0].weightKg) * 10) / 10;
@@ -132,7 +147,12 @@ async function loadProgressSummary(workoutPlanPromise) {
     }
     container.innerHTML = lines.length
       ? lines.join('')
-      : '<p class="placeholder">Log a workout or your weight to see your progress here.</p><a class="btn btn--secondary" href="/progress.html">Log your weight</a>';
+      : emptyStateHtml({
+        compact: true, iconName: 'chart', title: 'Nothing to show yet',
+        text: 'Log a workout or your weight and your progress appears here.',
+        action: { href: '/progress.html', label: 'Log your weight' },
+      });
+    animateProgressCounters(container);
   } catch (error) {
     container.innerHTML = `<p class="placeholder">${escapeHtml(error.message)}</p>`;
   }

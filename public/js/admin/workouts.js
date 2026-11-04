@@ -38,7 +38,7 @@ async function loadWorkouts() {
   document.getElementById('result-count').textContent = `${workouts.length} workout${workouts.length === 1 ? '' : 's'}`;
   workoutTable.innerHTML = workouts.length
     ? workouts.map(workoutRowHtml).join('')
-    : '<tr><td colspan="8" class="placeholder">No workouts match these filters.</td></tr>';
+    : `<tr><td colspan="8">${emptyStateHtml({ compact: true, iconName: 'search', title: 'No workouts match these filters', text: 'Choose a different goal, difficulty or beginner setting.' })}</td></tr>`;
 }
 
 async function loadActivity() {

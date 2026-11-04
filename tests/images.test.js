@@ -58,7 +58,7 @@ describe('Photo uploads', () => {
 });
 
 describe('Recipe photos', () => {
-  test('a recipe saved with a photo shows it to students; recipes without one have none', async () => {
+  test('a recipe saved with a photo shows it to students; a recipe saved without one has none', async () => {
     const admin = await adminAgent();
     const { body: { path: photo } } = await upload(admin).expect(201);
     const { body: recipe } = await admin.post('/api/admin/recipes').send(newRecipe({ imagePath: photo })).expect(201);
@@ -67,8 +67,14 @@ describe('Recipe photos', () => {
     const { agent: student } = await signedUpAgent();
     const list = await student.get('/api/recipes?search=photo test').expect(200);
     assert.equal(list.body[0].imageUrl, photo);
-    const other = await student.get('/api/recipes?search=lentil').expect(200);
+    const { body: noPhoto } = await admin.post('/api/admin/recipes').send(newRecipe({ recipeName: 'No Photo Test Salad' })).expect(201);
+    const other = await student.get('/api/recipes?search=no photo test').expect(200);
+    assert.equal(other.body[0].recipeId, noPhoto.recipeId);
     assert.equal(other.body[0].imageUrl, null);
+
+    // Seeded recipes come with their bundled photo
+    const seeded = await student.get('/api/recipes?search=red lentil soup').expect(200);
+    assert.match(seeded.body[0].imageUrl, /^\/img\/recipes\/\d{2}\.png$/);
   });
 
   test('rejects photo paths that are not uploads', async () => {
@@ -103,6 +109,8 @@ describe('Recipe photos', () => {
     const admin = await adminAgent();
     const { body: { path: photo } } = await upload(admin);
     const { RecipeID } = db.prepare("SELECT RecipeID FROM Recipes WHERE RecipeName = 'Red Lentil Soup'").get();
+    // Replace the seeded photo with an uploaded one
+    db.prepare('DELETE FROM RecipeImage WHERE RecipeID = ?').run(RecipeID);
     db.prepare('INSERT INTO RecipeImage (RecipeID, ImagePath) VALUES (?, ?)').run(RecipeID, photo);
 
     const { agent: student } = await signedUpAgent();

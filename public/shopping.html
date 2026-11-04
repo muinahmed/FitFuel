@@ -27,10 +27,11 @@
     <section class="card">
       <div class="shopping-head">
         <p id="total-cost" class="shopping-total" hidden></p>
-        <p id="progress-text" class="muted" aria-live="polite">Loading your shopping list…</p>
+        <p id="progress-text" class="muted" aria-live="polite"><span class="visually-hidden">Loading your shopping list…</span></p>
         <div class="progress-bar" id="progress-bar" aria-hidden="true" hidden><div class="progress-bar__fill" id="progress-fill"></div></div>
       </div>
-      <ul id="shopping-list" class="shopping-list"></ul>
+      <ul id="shopping-list" class="shopping-list" data-skeleton="row 6"></ul>
+      <div id="shopping-empty"></div>
     </section>
   </main>
   <script src="/js/icons.js"></script>

@@ -35,7 +35,7 @@ const ICON_PATHS = {
 // SVG markup for a named icon
 function icon(name, size = 20) {
   return `<svg class="icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICON_PATHS[name] || ''}</svg>`;
+    stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICON_PATHS[name] || ''}</svg>`;
 }
 
 // Fill in <span data-icon="name"> placeholders written in the HTML

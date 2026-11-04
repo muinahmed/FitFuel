@@ -21,4 +21,7 @@ for (const { table, column, definition } of ADDED_COLUMNS) {
   if (!hasColumn) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
 
+// Fill image paths for seeded recipes in existing databases without replacing admin uploads.
+require('./recipeImages').ensureRecipeImages(db);
+
 module.exports = db;

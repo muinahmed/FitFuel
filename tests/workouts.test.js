@@ -51,11 +51,19 @@ describe('Workout plan (FF-16)', () => {
   });
 
   test('more training days than workouts cycles through them again', async () => {
-    const { agent } = await studentWith('stay healthy', 5);
-    const { body } = await agent.get('/api/workouts/plan').expect(200);
-    const ids = body.sessions.map((session) => session.workout.workoutId);
-    assert.equal(ids.length, 5);
-    assert.deepEqual(ids.slice(3), ids.slice(0, 2));
+    // Leave only 3 'stay healthy' workouts so a 5-day plan has to repeat two of them
+    const extra = db.prepare("SELECT WorkoutID FROM Workouts WHERE Goal = 'stay healthy' ORDER BY WorkoutID").all().slice(3);
+    for (const { WorkoutID } of extra) db.prepare("UPDATE Workouts SET Goal = 'build muscle' WHERE WorkoutID = ?").run(WorkoutID);
+    try {
+      const { agent } = await studentWith('stay healthy', 5);
+      const { body } = await agent.get('/api/workouts/plan').expect(200);
+      const ids = body.sessions.map((session) => session.workout.workoutId);
+      assert.equal(ids.length, 5);
+      assert.equal(new Set(ids).size, 3);
+      assert.deepEqual(ids.slice(3), ids.slice(0, 2));
+    } finally {
+      for (const { WorkoutID } of extra) db.prepare("UPDATE Workouts SET Goal = 'stay healthy' WHERE WorkoutID = ?").run(WorkoutID);
+    }
   });
 
   test('changing the goal changes the suggested workouts', async () => {
