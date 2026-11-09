@@ -54,7 +54,7 @@ function renderPlan(plan) {
   weekToggle.select(plan.week);
   document.getElementById('week-label').textContent =
     `Week of ${formatDate(plan.weekStart, { day: 'numeric', month: 'long' })} – ${formatDate(plan.weekEnd, { day: 'numeric', month: 'long', year: 'numeric' })}`;
-  generateButton.textContent = plan.hasPlan ? 'Generate new plan' : 'Generate plan';
+  generateButton.hidden = !plan.hasPlan;
   const shoppingLink = document.getElementById('shopping-link');
   shoppingLink.hidden = !plan.hasPlan;
   shoppingLink.href = `/shopping.html${weekQuery(plan.week)}`;

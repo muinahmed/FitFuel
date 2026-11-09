@@ -76,10 +76,8 @@ function progressRingHtml(fraction, centreHtml, { over = false, light = false } 
   return `
     <div class="ring${over ? ' ring--over' : ''}${light ? ' ring--light' : ''}">
       <svg viewBox="0 0 ${size} ${size}" width="100%" height="100%" aria-hidden="true" focusable="false">
-          <defs><linearGradient id="home-progress-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#B7E84B"/><stop offset="52%" stop-color="#48C58A"/><stop offset="100%" stop-color="#48B8D1"/></linearGradient></defs>
         <circle class="ring__track" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"/>
         <circle class="ring__value" cx="${size / 2}" cy="${size / 2}" r="${radius}" fill="none" stroke-width="${stroke}"
-                  stroke="url(#home-progress-gradient)"
                 stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - shown)}"
                 style="--ring-start:${circumference};--ring-end:${circumference * (1 - shown)}"/>
       </svg>

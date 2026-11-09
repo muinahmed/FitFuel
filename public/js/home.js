@@ -41,7 +41,7 @@ async function loadBudget() {
     const used = plan.totalCost / plan.weeklyBudget;
     const usedPercent = Math.round(used * 100);
     ring.innerHTML = progressRingHtml(used,
-      `<span class="ring__number" data-count-to="${usedPercent}" data-count-suffix="%">0%</span><span class="ring__label">of budget</span>`,
+      `<span class="ring__number" data-count-to="${usedPercent}" data-count-suffix="%">0%</span><span class="ring__label">planned</span>`,
       { over: plan.overBudget });
     animateProgressCounters(ring);
   } catch (error) {
@@ -58,8 +58,7 @@ async function loadTodaysMeals() {
     if (!today || (!today.lunch && !today.dinner)) {
       container.innerHTML = emptyStateHtml({
         compact: true, iconName: 'meals', title: 'No meals planned for today',
-        text: 'Generate a plan and your lunch and dinner show up here.',
-        action: { href: '/mealplan.html?week=this', label: 'Plan this week' },
+        text: 'Once you plan the week, your lunch and dinner show up here.',
       });
       return;
     }

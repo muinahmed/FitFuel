@@ -13,6 +13,7 @@
   --card: #FFFFFF;
   --tint: #F6F9F4;
   --line: #E1EADD;
+  --input-border: #7D8F84; /* 3:1+ against white and --tint, so form fields stay visible (WCAG 1.4.11) */
   --text: #1F2A24;
   --text-muted: #56635B;
   /* Status */
@@ -339,7 +340,7 @@ body.has-tab-bar { padding-bottom: calc(var(--tab-bar-height) + env(safe-area-in
 .form-field input, .form-field select {
   width: 100%;
   padding: 0.7rem 0.85rem;
-  border: 1px solid #C5D5C8;
+  border: 1px solid var(--input-border);
   border-radius: var(--radius-input);
   font: inherit;
   color: var(--text);
@@ -412,7 +413,7 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
 .ring { position: relative; display: inline-grid; place-items: center; flex-shrink: 0; width: 132px; height: 132px; }
 .ring svg { transform: rotate(-90deg); }
 .ring__track { stroke: rgba(255, 255, 255, 0.16); }
-.ring__value { transition: stroke-dashoffset 0.6s ease; }
+.ring__value { stroke: var(--lime); transition: stroke-dashoffset 0.6s ease; }
 .ring--over .ring__value { stroke: var(--sun); }
 .ring__centre { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.15; }
 .ring__number { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -964,9 +965,10 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
 .data-table th, .data-table td { text-align: left; padding: 0.65rem 0.6rem; border-bottom: 1px solid var(--line); }
 .data-table th { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
 .data-table tbody tr:hover { background: var(--tint); }
-.data-table input { width: 100%; min-width: 7rem; padding: 0.45rem; border: 1px solid #C5D5C8; border-radius: 8px; font: inherit; }
+.data-table input { width: 100%; min-width: 7rem; padding: 0.45rem; border: 1px solid var(--input-border); border-radius: 8px; font: inherit; }
 .row-actions { text-align: right; white-space: nowrap; }
-.row-actions .link-button { margin-left: 0.75rem; }
+/* Edit / Delete in table rows: 44px tap targets with a gap, so a thumb can't hit the wrong one */
+.row-actions .link-button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 0.5rem; margin-left: 0.5rem; }
 
 /* ---------- Profile ---------- */
 
@@ -1015,7 +1017,7 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
 
 .row-list { list-style: none; padding: 0; margin: 0 0 0.5rem; }
 .row-item { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--line); }
-.row-item input { width: 100%; padding: 0.55rem; border: 1px solid #C5D5C8; border-radius: 10px; font: inherit; background: var(--tint); }
+.row-item input { width: 100%; padding: 0.55rem; border: 1px solid var(--input-border); border-radius: 10px; font: inherit; background: var(--tint); }
 .row-item [data-remove-row] { justify-self: start; }
 .row-wide { grid-column: 1 / -1; }
 #step-rows .row-item { grid-template-columns: 1fr auto; }
