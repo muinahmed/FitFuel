@@ -1121,6 +1121,37 @@ fieldset.form-field { border: 0; padding: 0; margin: 0 0 1rem; min-width: 0; }
 .landing > :nth-child(2), .features > .feature:nth-child(2), .auth > :nth-child(2), .not-found > :nth-child(2) { animation-delay: 0.08s; }
 .features > .feature:nth-child(3), .not-found > :nth-child(3) { animation-delay: 0.16s; }
 
+/* Student and admin pages: the page's own sections rise in once, top to bottom. "backwards" (not
+   "both") so nothing is held after the entrance and the hover lifts on cards keep working. */
+.dashboard__head, .page-heading, .hero-card, .dashboard__grid > *, .quick-links {
+  animation: rise-in 0.5s cubic-bezier(.2, .8, .2, 1) backwards;
+}
+.hero-card { animation-delay: 0.06s; }
+.dashboard__grid > :nth-child(1) { animation-delay: 0.12s; }
+.dashboard__grid > :nth-child(2) { animation-delay: 0.18s; }
+.dashboard__grid > :nth-child(3) { animation-delay: 0.24s; }
+.quick-links { animation-delay: 0.3s; }
+
+/* Planned spending fills up from empty each time the plan is drawn */
+.budget-meter__fill { animation: meter-grow 0.9s cubic-bezier(.2, .8, .2, 1) 0.15s backwards; }
+@keyframes meter-grow { from { width: 0; } }
+
+/* Charts draw in from left to right. charts.js puts in a fresh canvas for new data,
+   so this plays on first load and after a new entry, but not on a window resize. */
+.chart canvas { animation: chart-wipe 0.9s cubic-bezier(.4, 0, .2, 1) both; }
+@keyframes chart-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* Moving between pages cross-fades while the header and tab bar stay put
+   (browsers without cross-document view transitions just load the page as before) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  .site-header { view-transition-name: site-header; }
+  .tab-bar { view-transition-name: tab-bar; }
+  ::view-transition-old(root) { animation: fade-out 0.16s ease-in both; }
+  ::view-transition-new(root) { animation: fade-in 0.22s ease-out both; }
+}
+@keyframes fade-out { to { opacity: 0; } }
+
 /* ---------- Empty states ---------- */
 
 .empty-state {
