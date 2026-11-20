@@ -86,7 +86,7 @@ function renderPlan(plan) {
 
   if (!plan.goal) {
     sessionsContainer.innerHTML = emptyStateHtml({
-      image: '/img/workouts/wellness.png',
+      image: '/img/workouts/wellness.webp',
       title: 'Choose your fitness goal first',
       text: 'Lose weight, build muscle or stay healthy: FitFuel suggests workouts that match.',
       action: { href: '/profile.html', label: 'Choose a goal' },

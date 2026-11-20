@@ -100,7 +100,7 @@ function editRowHtml(entry) {
 // Newest entries first in the table
 function renderWeightTable() {
   weightTable.innerHTML = weights.length
-    ? [...weights].reverse().map(rowHtml).join('')
+    ? weights.toReversed().map(rowHtml).join('')
     : '<tr><td colspan="3" class="placeholder">No weight entries yet. Add your first one above.</td></tr>';
 }
 

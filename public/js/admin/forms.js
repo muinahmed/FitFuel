@@ -21,7 +21,11 @@ function openFormDialog(dialog, onSubmit) {
       }
     });
   };
-  dialog.querySelectorAll('[data-close-dialog]').forEach((button) => { button.onclick = () => dialog.close(); });
+  // Close buttons use command="close" in the HTML; browsers without Invoker Commands
+  // (before Chrome/Edge 135, Firefox 144, Safari 26.2) need a click handler instead.
+  if (!('commandForElement' in HTMLButtonElement.prototype)) {
+    dialog.querySelectorAll('[command="close"]').forEach((button) => { button.onclick = () => dialog.close(); });
+  }
   dialog.showModal();
 }
 
@@ -47,7 +51,7 @@ function setUpRowList(list, rowHtml, addButton, removeLabel = 'Remove') {
       return item;
     },
     clear() {
-      list.innerHTML = '';
+      list.replaceChildren();
     },
     // One object per row: { field: value }; checkboxes give true/false
     read() {

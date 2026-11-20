@@ -127,13 +127,18 @@ function buildWeekPlan(userId, week) {
   const days = [];
   const dayByDate = new Map();
   for (let i = 0; i < DAYS_PER_WEEK; i++) {
-    const day = { date: addDays(week.start, i), lunch: null, dinner: null };
+    const day = { date: addDays(week.start, i), lunch: null, dinner: null, calories: 0 };
     days.push(day);
     dayByDate.set(day.date, day);
   }
-  for (const { planDate, mealSlot, ...meal } of entries) dayByDate.get(planDate)[mealSlot] = meal;
+  for (const { planDate, mealSlot, ...meal } of entries) {
+    const day = dayByDate.get(planDate);
+    day[mealSlot] = meal;
+    day.calories += meal.calories;
+  }
 
   const totalCost = entries.reduce((sum, entry) => sum + toOre(entry.pricePerPortion), 0) / 100;
+  const totalCalories = entries.reduce((sum, entry) => sum + entry.calories, 0);
   const overBudget = entries.length > 0 && totalCost > weeklyBudget;
   let warning = null;
   if (overBudget) {
@@ -146,7 +151,7 @@ function buildWeekPlan(userId, week) {
 
   return {
     week: week.name, weekStart: week.start, weekEnd: week.end, weeklyBudget, dietType,
-    hasPlan: entries.length > 0, totalCost, overBudget, warning, days,
+    hasPlan: entries.length > 0, totalCost, totalCalories, overBudget, warning, days,
   };
 }
 

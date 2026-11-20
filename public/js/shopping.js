@@ -44,8 +44,8 @@ async function loadShoppingList() {
     weekToggle.select(list.week);
     document.getElementById('week-label').textContent = `Week of ${formatDate(list.weekStart, { day: 'numeric', month: 'long', year: 'numeric' })}`;
     document.getElementById('plan-link').href = `/mealplan.html${weekQuery(list.week)}`;
-    shoppingList.innerHTML = '';
-    document.getElementById('shopping-empty').innerHTML = '';
+    shoppingList.replaceChildren();
+    document.getElementById('shopping-empty').replaceChildren();
     document.getElementById('progress-bar').hidden = true;
     const totalCost = document.getElementById('total-cost');
     totalCost.hidden = list.items.length === 0;
@@ -54,7 +54,7 @@ async function loadShoppingList() {
       const weekName = list.week === 'next' ? 'next week' : 'this week';
       progressText.textContent = '';
       document.getElementById('shopping-empty').innerHTML = emptyStateHtml({
-        image: '/img/budget-banner.png',
+        image: '/img/budget-banner-small.webp',
         title: `Your shopping list for ${weekName} is empty`,
         text: 'Plan your meals and FitFuel adds up every ingredient you need, with an estimated cost.',
         action: { href: `/mealplan.html${weekQuery(list.week)}`, label: 'Plan your meals' },

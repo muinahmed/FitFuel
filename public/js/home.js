@@ -23,7 +23,7 @@ async function loadBudget() {
     if (!(plan.weeklyBudget > 0)) {
       figure.textContent = 'Not set';
       details.innerHTML = '<p>Set a weekly food budget to start planning meals.</p><a class="btn" href="/profile.html">Set your budget</a>';
-      ring.innerHTML = '';
+      ring.replaceChildren();
       return;
     }
 
@@ -67,7 +67,7 @@ async function loadTodaysMeals() {
         ${foodTileHtml({
           ...meal,
           mealType: slot.toLowerCase(),
-          imageUrl: meal.imageUrl || (slot === 'Lunch' ? '/img/home-banner-photo.png' : '/img/meal-prep-banner.png'),
+          imageUrl: meal.imageUrl || (slot === 'Lunch' ? '/img/home-banner-photo-small.webp' : '/img/meal-prep-banner-small.webp'),
         })}
         <div class="meal-row__text">
           <span class="meal-row__slot">${slot}</span>

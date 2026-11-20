@@ -57,16 +57,24 @@ function getRecipeDialog() {
   recipeDialog = document.createElement('dialog');
   recipeDialog.className = 'recipe-dialog';
   recipeDialog.setAttribute('aria-labelledby', 'recipe-dialog-title');
+  recipeDialog.setAttribute('closedby', 'any'); // clicking the dark area outside the dialog closes it
   recipeDialog.innerHTML = `
     <button type="button" class="dialog-close" aria-label="Close recipe">×</button>
     <div class="recipe-dialog__body"></div>`;
   document.body.appendChild(recipeDialog);
 
   recipeDialog.querySelector('.dialog-close').addEventListener('click', () => recipeDialog.close());
-  // Clicking the dark area outside the dialog closes it
-  recipeDialog.addEventListener('click', (event) => {
-    if (event.target === recipeDialog) recipeDialog.close();
-  });
+  // Browsers without closedby (Safari): close on a press and release that are both outside the
+  // dialog's box, so a text-selection drag that ends on the backdrop does not close it
+  if (!('closedBy' in HTMLDialogElement.prototype)) {
+    const outside = (event) => {
+      const box = recipeDialog.getBoundingClientRect();
+      return event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
+    };
+    let pressedOutside = false;
+    recipeDialog.addEventListener('pointerdown', (event) => { pressedOutside = outside(event); });
+    recipeDialog.addEventListener('pointerup', (event) => { if (pressedOutside && outside(event)) recipeDialog.close(); });
+  }
   return recipeDialog;
 }
 

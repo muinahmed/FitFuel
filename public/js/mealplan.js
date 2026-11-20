@@ -37,10 +37,23 @@ function dayHtml(day) {
     <section class="card plan-day${isToday ? ' plan-day--today' : ''}" aria-label="${dayName}">
       <h2>${formatDate(day.date, { weekday: 'long' })}
         <span class="muted">${formatDate(day.date, { day: 'numeric', month: 'short' })}</span>
-        ${isToday ? '<span class="badge badge--today">Today</span>' : ''}</h2>
+        ${isToday ? '<span class="badge badge--today">Today</span>' : ''}
+        ${day.calories ? `<span class="plan-day__kcal">${icon('flame', 16)}${formatKcal(day.calories)}</span>` : ''}</h2>
       ${mealHtml('Lunch', day.lunch, dayName)}
       ${mealHtml('Dinner', day.dinner, dayName)}
     </section>`;
+}
+
+// 9800 -> "9,800 kcal"
+function formatKcal(calories) {
+  return `${calories.toLocaleString('en-GB')} kcal`;
+}
+
+// Calories are shown as information, not a target: only lunch and dinner are planned
+function calorieSummaryHtml(plan) {
+  const perDay = Math.round(plan.totalCalories / plan.days.length);
+  return `<p class="plan-summary__kcal">${icon('flame', 16)}<span><strong>${formatKcal(plan.totalCalories)}</strong> planned,
+    about ${formatKcal(perDay)} a day from lunch and dinner <span class="muted">(approximate)</span></span></p>`;
 }
 
 // "this week" / "next week" for messages
@@ -65,7 +78,7 @@ function renderPlan(plan) {
       ? `<p>Your budget for ${weekName(plan)} is <strong>${formatKr(plan.weeklyBudget)}</strong>.</p>`
       : '<p>No weekly food budget yet.</p>';
     planGrid.innerHTML = emptyStateHtml({
-      image: '/img/meal-prep-banner.png',
+      image: '/img/meal-prep-banner-small.webp',
       title: hasBudget ? `No meals planned for ${weekName(plan)} yet` : 'Set your budget to start planning',
       text: hasBudget
         ? `FitFuel fills 7 days of lunches and dinners that fit your diet and ${formatKr(plan.weeklyBudget)} budget.`
@@ -76,7 +89,8 @@ function renderPlan(plan) {
   }
 
   costSummary.innerHTML = `<p class="plan-summary__title">Planned spending for ${weekName(plan)}</p>`
-    + budgetMeterHtml(plan.totalCost, plan.weeklyBudget);
+    + budgetMeterHtml(plan.totalCost, plan.weeklyBudget)
+    + calorieSummaryHtml(plan);
   if (plan.warning) showMessage(planMessage, plan.warning, 'info');
   planGrid.innerHTML = plan.days.map(dayHtml).join('');
 }

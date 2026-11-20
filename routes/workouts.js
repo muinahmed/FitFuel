@@ -10,9 +10,9 @@ const { readNumber } = require('../utils/validation');
 const router = express.Router();
 const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const GOAL_IMAGES = {
-  'lose weight': '/img/workouts/weight-loss.png',
-  'build muscle': '/img/workouts/strength.png',
-  'stay healthy': '/img/workouts/wellness.png',
+  'lose weight': '/img/workouts/weight-loss.webp',
+  'build muscle': '/img/workouts/strength.webp',
+  'stay healthy': '/img/workouts/wellness.webp',
 };
 
 // Training days per week -> which weekdays to train (spread out to leave rest days)

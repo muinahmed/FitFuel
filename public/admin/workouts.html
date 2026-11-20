@@ -72,7 +72,7 @@
   </main>
 
   <dialog class="recipe-dialog form-dialog form-dialog--wide" id="workout-dialog" aria-labelledby="workout-dialog-title">
-    <button type="button" class="dialog-close" aria-label="Close" data-close-dialog>×</button>
+    <button type="button" class="dialog-close" aria-label="Close" commandfor="workout-dialog" command="close">×</button>
     <h2 id="workout-dialog-title">Add workout</h2>
     <div class="message" role="alert"></div>
     <form>
@@ -114,7 +114,7 @@
 
       <div class="button-row">
         <button type="submit" class="btn">Save workout</button>
-        <button type="button" class="btn btn--secondary" data-close-dialog>Cancel</button>
+        <button type="button" class="btn btn--secondary" commandfor="workout-dialog" command="close">Cancel</button>
       </div>
     </form>
   </dialog>

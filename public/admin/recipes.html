@@ -69,7 +69,7 @@
   </main>
 
   <dialog class="recipe-dialog form-dialog form-dialog--wide" id="recipe-dialog" aria-labelledby="recipe-dialog-title">
-    <button type="button" class="dialog-close" aria-label="Close" data-close-dialog>×</button>
+    <button type="button" class="dialog-close" aria-label="Close" commandfor="recipe-dialog" command="close">×</button>
     <h2 id="recipe-dialog-title">Add recipe</h2>
     <div class="message" role="alert"></div>
     <form>
@@ -120,7 +120,7 @@
 
       <div class="button-row">
         <button type="submit" class="btn">Save recipe</button>
-        <button type="button" class="btn btn--secondary" data-close-dialog>Cancel</button>
+        <button type="button" class="btn btn--secondary" commandfor="recipe-dialog" command="close">Cancel</button>
       </div>
     </form>
   </dialog>

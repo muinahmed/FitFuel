@@ -66,6 +66,19 @@ describe('Weekly meal plan (FF-13)', () => {
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM MealPlanEntry WHERE UserID = ?').get(userId).n, 14);
   });
 
+  test('adds up calories for each day and the whole week', async () => {
+    const agent = await studentWith(500);
+    const { body } = await agent.post('/api/mealplans/generate?week=this').expect(201);
+    for (const day of body.days) {
+      assert.equal(day.calories, recipeById(day.lunch.recipeId).Calories + recipeById(day.dinner.recipeId).Calories);
+    }
+    assert.equal(body.totalCalories, body.days.reduce((sum, day) => sum + day.calories, 0));
+
+    const empty = await (await studentWith(500)).get('/api/mealplans?week=next').expect(200);
+    assert.equal(empty.body.totalCalories, 0);
+    assert.ok(empty.body.days.every((day) => day.calories === 0));
+  });
+
   test('total cost stays within the budget and is shown against it', async () => {
     const agent = await studentWith(300, 'vegetarian');
     for (let attempt = 0; attempt < 10; attempt++) {
